@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <title>個人退休資產試算</title>
+    <style>
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; padding: 20px; max-width: 600px; margin: auto; background: #f8f9fa; color: #333; line-height: 1.6; }
+        .card { background: white; padding: 30px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+        .brand-banner { text-align: center; font-size: 3em; margin-bottom: 10px; background: #fff3cd; border-radius: 12px; padding: 10px; }
+        h2 { text-align: center; color: #2c3e50; font-weight: 800; margin-bottom: 5px; font-size: 1.8em; }
+        .subtitle { text-align: center; color: #7f8c8d; font-size: 0.95em; margin-bottom: 30px; }
+        
+        .slider-box { margin-bottom: 25px; padding: 15px; background: #fdfdfd; border: 1px solid #eee; border-radius: 10px; }
+        .label-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; font-weight: bold; color: #495057; }
+        .val { color: #0d6efd; font-family: monospace; font-size: 1.2em; background: #e9ecef; padding: 2px 10px; border-radius: 6px; }
+        .highlight-val { color: #e67e22; background: #fdebd0; } 
+        .daily-note { font-size: 0.75em; color: #888; margin-left: 8px; font-weight: normal; }
+        input[type=range] { width: 100%; cursor: pointer; accent-color: #0d6efd; height: 6px; }
+        input[type=range].dividend-slider { accent-color: #e67e22; }
+        
+        #result-box { margin-top: 30px; padding: 25px; border-radius: 12px; background: #ebf5ff; text-align: center; border: 1px solid #b6d4fe; }
+        .result-title { font-size: 1.1em; color: #084298; font-weight: bold; margin-bottom: 10px; }
+        #final-amount { font-size: 2.8em; color: #0d6efd; font-weight: 900; margin: 5px 0; letter-spacing: -1px; }
+        
+        .payout-box { margin-top: 20px; padding: 20px; background: #fff8e1; border: 1px solid #ffe082; border-radius: 10px; }
+        .payout-title { font-size: 1.1em; color: #d35400; font-weight: bold; margin-bottom: 8px; }
+        .payout-amount { font-size: 2.2em; color: #e67e22; font-weight: 900; }
+        .payout-note { font-size: 0.85em; color: #a04000; margin-top: 5px; }
+
+        .calc-details { font-size: 0.9em; color: #6c757d; margin-top: 20px; text-align: left; background: rgba(255,255,255,0.6); padding: 12px; border-radius: 8px; }
+
+        .cta-btn { background: #06C755; color: white; border: none; padding: 16px 20px; font-size: 1.1em; border-radius: 10px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 25px; transition: background 0.2s; box-shadow: 0 4px 10px rgba(6, 199, 85, 0.3); }
+        .cta-btn:hover { background: #05b04b; }
+        .cta-note { text-align: center; font-size: 0.85em; color: #6c757d; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="brand-banner">🍋</div>
+    <h2>退休計算機</h2>
+    <div class="subtitle">算出未來的你，能擁有多少「專屬月退俸」</div>
+    
+    <div class="slider-box">
+        <div class="label-row"><span>目前年齡</span><span id="v_current_age" class="val">30</span></div>
+        <input type="range" id="current_age" min="20" max="65" step="1" value="30" oninput="update()">
+    </div>
+
+    <div class="slider-box">
+        <div class="label-row"><span>預計退休年齡</span><span id="v_target_age" class="val">60</span></div>
+        <input type="range" id="target_age" min="30" max="80" step="1" value="60" oninput="update()">
+    </div>
+
+    <div class="slider-box">
+        <div class="label-row">
+            <span>每月存入金額 <span class="daily-note">(約每天存 <span id="v_daily_save">500</span> 元)</span></span>
+            <span id="v_monthly_save" class="val">15000</span>
+        </div>
+        <input type="range" id="monthly_save" min="3000" max="100000" step="1000" value="15000" oninput="update()">
+    </div>
+
+    <div class="slider-box">
+        <div class="label-row"><span>累積期：預估年化報酬率 (%)</span><span id="v_annual_return" class="val">6</span></div>
+        <input type="range" id="annual_return" min="1" max="30" step="0.5" value="6" oninput="update()">
+    </div>
+
+    <div class="slider-box" style="border-color: #ffe082; background: #fffdf5;">
+        <div class="label-row" style="color: #d35400;">
+            <span>退休後：預估配息率 (%) <span class="daily-note" style="color:#d35400;">(決定您的被動收入)</span></span>
+            <span id="v_dividend_rate" class="val highlight-val">5</span>
+        </div>
+        <input type="range" id="dividend_rate" class="dividend-slider" min="2" max="12" step="0.5" value="5" oninput="update()">
+    </div>
+
+    <div id="result-box">
+        <div class="result-title">在您 <span id="display_target_age">60</span> 歲退休（或財務自由）時的預估總資產</div>
+        <div id="final-amount">0 元</div>
+        
+        <div class="payout-box">
+            <div class="payout-title">✨ 退休後每個月的「被動現金流」</div>
+            <div class="payout-amount" id="monthly-payout">0 元</div>
+            <div class="payout-note">將總資產轉入配息工具，不傷本金，每月無腦領取！</div>
+        </div>
+
+        <div class="calc-details">
+            📊 <strong>精算明細：</strong><br>
+            經過 <span id="display_years">30</span> 年，您實際投入的本金為：<span id="total_principal">0</span> 元。<br>
+            其餘皆為時間為您滾出的複利報酬。
+        </div>
+    </div>
+
+    <button class="cta-btn" onclick="sendToLine()">一鍵傳送結果給理財幫手 🍋</button>
+    <div class="cta-note">點擊後會自動為您打開 LINE，請直接「貼上」即可傳送！</div>
+</div>
+
+<script>
+    function update() {
+        let currentAge = parseInt(document.getElementById('current_age').value);
+        let targetAge = parseInt(document.getElementById('target_age').value);
+        let save = parseFloat(document.getElementById('monthly_save').value);
+        let rate = parseFloat(document.getElementById('annual_return').value);
+        let divRate = parseFloat(document.getElementById('dividend_rate').value);
+
+        // 防呆機制：如果退休年齡拉得比現在年齡小或等於，自動加 1 年
+        if (targetAge <= currentAge) {
+            targetAge = currentAge + 1;
+            document.getElementById('target_age').value = targetAge;
+        }
+
+        let dailySave = Math.round(save / 30);
+
+        document.getElementById('v_current_age').innerText = currentAge;
+        document.getElementById('v_target_age').innerText = targetAge;
+        document.getElementById('v_monthly_save').innerText = save.toLocaleString();
+        document.getElementById('v_daily_save').innerText = dailySave.toLocaleString();
+        document.getElementById('v_annual_return').innerText = rate;
+        document.getElementById('v_dividend_rate').innerText = divRate;
+
+        // 累積期計算
+        const years = targetAge - currentAge;
+        const annualRate = rate / 100;
+        const annualSave = save * 12;
+        const totalPrincipal = annualSave * years;
+
+        let totalFutureValue = 0;
+        if (annualRate > 0) {
+            totalFutureValue = annualSave * ((Math.pow(1 + annualRate, years) - 1) / annualRate);
+        } else {
+            totalFutureValue = totalPrincipal;
+        }
+
+        // 消耗期計算
+        let monthlyPayout = (totalFutureValue * (divRate / 100)) / 12;
+
+        document.getElementById('display_target_age').innerText = targetAge;
+        document.getElementById('display_years').innerText = years;
+        document.getElementById('final-amount').innerText = Math.round(totalFutureValue).toLocaleString() + " 元";
+        document.getElementById('total_principal').innerText = totalPrincipal.toLocaleString();
+        
+        document.getElementById('monthly-payout').innerText = Math.round(monthlyPayout).toLocaleString() + " 元";
+        
+        window.currentResultText = `嗨！理財幫手，我剛算完我的月退俸！🍋\n我預計 ${targetAge} 歲財務自由，預估能滾出 ${Math.round(totalFutureValue).toLocaleString()} 元的資產。\n如果以 ${divRate}% 的配息率來算，之後「每個月」大約有 ${Math.round(monthlyPayout).toLocaleString()} 元的現金流可以花！\n\n我想了解可以怎麼安排配置，才能安心達成這個目標！`;
+    }
+
+    function sendToLine() {
+        navigator.clipboard.writeText(window.currentResultText).then(() => {
+            alert("✅ 診斷結果已幫您複製！\\n\\n按下「確定」後會自動打開 LINE，請直接在對話框「貼上」傳送給理財幫手喔🍋");
+            window.location.href = "https://line.me/ti/p/IJhcTo9c9s";
+        }).catch(err => {
+            alert("為您打開 LINE 囉！您可以手動截圖並傳送給理財幫手🍋");
+            window.location.href = "https://line.me/ti/p/IJhcTo9c9s";
+        });
+    }
+
+    update();
+</script>
+
+</body>
+</html>
