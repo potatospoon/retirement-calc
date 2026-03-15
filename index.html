@@ -14,13 +14,13 @@
         h2 { text-align: center; color: #2c3e50; font-weight: 800; margin-bottom: 5px; font-size: 1.6em; }
         .subtitle { text-align: center; color: #7f8c8d; font-size: 0.95em; margin-bottom: 25px; font-weight: bold; letter-spacing: 0.5px;}
         
-        /* 第一關：人生選擇題的按鈕設計 */
+        /* 第一關：人生選擇題 */
         .question-title { text-align: center; font-size: 1.1em; color: #d35400; font-weight: bold; margin-bottom: 15px; }
         .choice-btn { background: #fff; border: 2px solid #b6d4fe; color: #084298; padding: 15px; border-radius: 12px; font-size: 1.05em; font-weight: bold; width: 100%; margin-bottom: 12px; cursor: pointer; text-align: left; transition: 0.2s; box-shadow: 0 3px 6px rgba(0,0,0,0.03); }
         .choice-btn:hover, .choice-btn:active { background: #ebf5ff; border-color: #0d6efd; transform: translateY(-2px); }
         .choice-icon { font-size: 1.3em; margin-right: 10px; }
 
-        /* 計算機區塊（預設隱藏） */
+        /* 計算機區塊 */
         #calc-screen { display: none; animation: fadeIn 0.5s; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -62,7 +62,7 @@
     <div class="subtitle">我們一起來達成你想要的生活 ✨</div>
     
     <div id="intro-screen">
-        <div class="question-title">請問您未來 10 年，最渴望達成的生活狀態是什麼？</div>
+        <div class="question-title">請問您未來，最渴望達成的生活狀態是什麼？</div>
         <button class="choice-btn" onclick="startCalc('house')"><span class="choice-icon">🏠</span>溫馨小窩派 (先存第一間房頭期款)</button>
         <button class="choice-btn" onclick="startCalc('family')"><span class="choice-icon">👨‍👩‍👧‍👦</span>為愛打拼派 (成立家庭養小孩)</button>
         <button class="choice-btn" onclick="startCalc('travel')"><span class="choice-icon">✈️</span>體驗世界派 (準備專屬旅遊金)</button>
@@ -142,31 +142,32 @@
 
         let alertMsg = "";
         
+        // 🌟 這裡的預設值已經精算過，一進去就會完美對應你的 5 大目標金額！
         if (type === 'house') {
             userLifeGoal = "🏠 溫馨小窩派 (存頭期款)";
             alertMsg = "🎯 您選擇了【溫馨小窩派】！買房子我們先以『存頭期款』為優先，建議階段性目標抓在 400 萬。讓我們來算算！";
-            document.getElementById('target_age').value = 45; 
-            document.getElementById('monthly_save').value = 15000;
+            document.getElementById('target_age').value = 40; // 10年後
+            document.getElementById('monthly_save').value = 25000; // 滾出來約快 400萬
         } else if (type === 'family') {
             userLifeGoal = "👨‍👩‍👧‍👦 為愛打拼派 (養小孩)";
             alertMsg = "🎯 您選擇了【為愛打拼派】！準備養小孩的教育與成長基金，建議階段性目標抓在 500 萬。讓我們來算算！";
-            document.getElementById('target_age').value = 45; 
-            document.getElementById('monthly_save').value = 18000;
+            document.getElementById('target_age').value = 42; // 12年後
+            document.getElementById('monthly_save').value = 25000; // 滾出來約 500萬
         } else if (type === 'travel') {
             userLifeGoal = "✈️ 體驗世界派 (旅遊)";
             alertMsg = "🎯 您選擇了【體驗世界派】！準備一筆不傷本金的專屬旅遊基金，建議階段性目標抓在 500 萬。讓我們來算算！";
-            document.getElementById('target_age').value = 45; 
-            document.getElementById('monthly_save').value = 18000;
+            document.getElementById('target_age').value = 42; // 12年後
+            document.getElementById('monthly_save').value = 25000; // 滾出來約 500萬
         } else if (type === 'simple') {
             userLifeGoal = "🍵 極簡躺平派 (簡單生活)";
             alertMsg = "🎯 您選擇了【極簡躺平派】！生活可以簡單，但醫療防護網要夠，建議總資產目標約 1,500 萬。讓我們來算算！";
-            document.getElementById('target_age').value = 55;
-            document.getElementById('monthly_save').value = 12000;
+            document.getElementById('target_age').value = 55; // 25年後
+            document.getElementById('monthly_save').value = 23000; // 滾出來約 1500萬
         } else if (type === 'fire') {
             userLifeGoal = "🔥 FIRE 自由派 (提早退休)";
-            alertMsg = "🎯 您選擇了【FIRE 自由派】！想提早開除老闆，時間與本金都要衝刺，建議總資產目標約 3,000 萬。讓我們來算算！";
-            document.getElementById('target_age').value = 50; 
-            document.getElementById('monthly_save').value = 35000;
+            alertMsg = "🎯 您選擇了【FIRE 自由派】！想提早開除老闆其實不需要天文數字，建議總資產目標約 1,500 萬。讓我們來算算！";
+            document.getElementById('target_age').value = 50; // 20年後
+            document.getElementById('monthly_save').value = 34000; // 滾出來約 1500萬
         }
 
         document.getElementById('goal-alert').innerText = alertMsg;
@@ -221,7 +222,7 @@
             badge.innerText = "💪 再加把勁，快存到第一桶金了！";
             badge.style.background = "#fff3cd"; badge.style.color = "#856404"; badge.style.border = "1px solid #ffeeba";
         } else if (totalFutureValue >= 1000000 && totalFutureValue < 2000000) {
-            badge.innerText = "✨ 恭喜！存到第一桶金了！邁向財富自由並不難！";
+            badge.innerText = "✨ 恭喜！存到第一桶金了！邁向目標並不難！";
             badge.style.background = "#d4edda"; badge.style.color = "#155724"; badge.style.border = "1px solid #c3e6cb";
         } else if (totalFutureValue >= 2000000 && totalFutureValue < 5000000) {
             badge.innerText = "🚀 準備朝第二、第三桶金邁進～！時間複利正在為您工作！";
