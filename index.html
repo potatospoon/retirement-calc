@@ -2,98 +2,177 @@
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
-    <title>個人退休資產試算</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>人生財務計算機</title>
     <style>
-        body { font-family: 'Helvetica Neue', Arial, sans-serif; padding: 20px; max-width: 600px; margin: auto; background: #f8f9fa; color: #333; line-height: 1.6; }
-        .card { background: white; padding: 30px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
-        .brand-banner { text-align: center; font-size: 3em; margin-bottom: 10px; background: #fff3cd; border-radius: 12px; padding: 10px; }
-        h2 { text-align: center; color: #2c3e50; font-weight: 800; margin-bottom: 5px; font-size: 1.8em; }
-        .subtitle { text-align: center; color: #7f8c8d; font-size: 0.95em; margin-bottom: 30px; }
+        * { box-sizing: border-box; } 
         
-        .slider-box { margin-bottom: 25px; padding: 15px; background: #fdfdfd; border: 1px solid #eee; border-radius: 10px; }
-        .label-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; font-weight: bold; color: #495057; }
-        .val { color: #0d6efd; font-family: monospace; font-size: 1.2em; background: #e9ecef; padding: 2px 10px; border-radius: 6px; }
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; padding: 12px; margin: 0 auto; max-width: 600px; background: #f8f9fa; color: #333; line-height: 1.6; }
+        .card { background: white; padding: 25px 18px; border-radius: 16px; box-shadow: 0 8px 25px rgba(0,0,0,0.06); width: 100%; }
+        
+        .brand-banner { text-align: center; font-size: 2.5em; margin-bottom: 5px; background: #fff3cd; border-radius: 12px; padding: 8px; }
+        h2 { text-align: center; color: #2c3e50; font-weight: 800; margin-bottom: 5px; font-size: 1.6em; }
+        .subtitle { text-align: center; color: #7f8c8d; font-size: 0.95em; margin-bottom: 25px; font-weight: bold; letter-spacing: 0.5px;}
+        
+        /* 第一關：人生選擇題的按鈕設計 */
+        .question-title { text-align: center; font-size: 1.1em; color: #d35400; font-weight: bold; margin-bottom: 15px; }
+        .choice-btn { background: #fff; border: 2px solid #b6d4fe; color: #084298; padding: 15px; border-radius: 12px; font-size: 1.05em; font-weight: bold; width: 100%; margin-bottom: 12px; cursor: pointer; text-align: left; transition: 0.2s; box-shadow: 0 3px 6px rgba(0,0,0,0.03); }
+        .choice-btn:hover, .choice-btn:active { background: #ebf5ff; border-color: #0d6efd; transform: translateY(-2px); }
+        .choice-icon { font-size: 1.3em; margin-right: 10px; }
+
+        /* 計算機區塊（預設隱藏） */
+        #calc-screen { display: none; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* 專屬目標提示框 */
+        #goal-alert { background: #fff3cd; color: #856404; padding: 12px 15px; border-radius: 10px; font-size: 0.9em; font-weight: bold; margin-bottom: 20px; border: 1px dashed #ffeeba; }
+
+        .slider-box { margin-bottom: 20px; padding: 12px; background: #fdfdfd; border: 1px solid #eee; border-radius: 10px; }
+        .label-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; font-weight: bold; color: #495057; font-size: 0.95em; flex-wrap: wrap; }
+        .val { color: #0d6efd; font-family: monospace; font-size: 1.15em; background: #e9ecef; padding: 2px 8px; border-radius: 6px; }
         .highlight-val { color: #e67e22; background: #fdebd0; } 
-        .daily-note { font-size: 0.75em; color: #888; margin-left: 8px; font-weight: normal; }
-        input[type=range] { width: 100%; cursor: pointer; accent-color: #0d6efd; height: 6px; }
+        .daily-note { font-size: 0.8em; color: #888; font-weight: normal; margin-top: 4px; }
+        
+        input[type=range] { width: 100%; cursor: pointer; accent-color: #0d6efd; height: 6px; margin-top: 8px; }
         input[type=range].dividend-slider { accent-color: #e67e22; }
         
-        #result-box { margin-top: 30px; padding: 25px; border-radius: 12px; background: #ebf5ff; text-align: center; border: 1px solid #b6d4fe; }
-        .result-title { font-size: 1.1em; color: #084298; font-weight: bold; margin-bottom: 10px; }
-        #final-amount { font-size: 2.8em; color: #0d6efd; font-weight: 900; margin: 5px 0; letter-spacing: -1px; }
+        #result-box { margin-top: 25px; padding: 20px 15px; border-radius: 12px; background: #ebf5ff; text-align: center; border: 1px solid #b6d4fe; position: relative; }
+        .result-title { font-size: 1.05em; color: #084298; font-weight: bold; margin-bottom: 8px; }
+        #final-amount { font-size: 2.4em; color: #0d6efd; font-weight: 900; margin: 5px 0; letter-spacing: -1px; word-break: break-all; }
         
-        .payout-box { margin-top: 20px; padding: 20px; background: #fff8e1; border: 1px solid #ffe082; border-radius: 10px; }
-        .payout-title { font-size: 1.1em; color: #d35400; font-weight: bold; margin-bottom: 8px; }
-        .payout-amount { font-size: 2.2em; color: #e67e22; font-weight: 900; }
-        .payout-note { font-size: 0.85em; color: #a04000; margin-top: 5px; }
+        #milestone-badge { display: block; padding: 8px 12px; border-radius: 8px; font-size: 0.85em; font-weight: bold; margin-top: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: all 0.3s ease; }
 
-        .calc-details { font-size: 0.9em; color: #6c757d; margin-top: 20px; text-align: left; background: rgba(255,255,255,0.6); padding: 12px; border-radius: 8px; }
+        .payout-box { margin-top: 15px; padding: 15px; background: #fff8e1; border: 1px solid #ffe082; border-radius: 10px; }
+        .payout-title { font-size: 1.05em; color: #d35400; font-weight: bold; margin-bottom: 5px; }
+        .payout-amount { font-size: 2em; color: #e67e22; font-weight: 900; word-break: break-all; }
+        .payout-note { font-size: 0.8em; color: #a04000; margin-top: 5px; }
 
-        .cta-btn { background: #06C755; color: white; border: none; padding: 16px 20px; font-size: 1.1em; border-radius: 10px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 25px; transition: background 0.2s; box-shadow: 0 4px 10px rgba(6, 199, 85, 0.3); }
+        .calc-details { font-size: 0.85em; color: #6c757d; margin-top: 15px; text-align: left; background: rgba(255,255,255,0.6); padding: 10px; border-radius: 8px; }
+
+        .cta-btn { background: #06C755; color: white; border: none; padding: 15px 10px; font-size: 1.05em; border-radius: 10px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 25px; transition: background 0.2s; box-shadow: 0 4px 10px rgba(6, 199, 85, 0.3); }
         .cta-btn:hover { background: #05b04b; }
-        .cta-note { text-align: center; font-size: 0.85em; color: #6c757d; margin-top: 10px; }
+        .cta-note { text-align: center; font-size: 0.8em; color: #6c757d; margin-top: 10px; }
     </style>
 </head>
 <body>
 
 <div class="card">
     <div class="brand-banner">🍋</div>
-    <h2>退休計算機</h2>
-    <div class="subtitle">算出未來的你，能擁有多少「專屬月退俸」</div>
+    <h2>人生財務計算機</h2>
+    <div class="subtitle">我們一起來達成你想要的生活 ✨</div>
     
-    <div class="slider-box">
-        <div class="label-row"><span>目前年齡</span><span id="v_current_age" class="val">30</span></div>
-        <input type="range" id="current_age" min="20" max="65" step="1" value="30" oninput="update()">
+    <div id="intro-screen">
+        <div class="question-title">請問您未來 10 年，最渴望達成的生活狀態是什麼？</div>
+        <button class="choice-btn" onclick="startCalc('house')"><span class="choice-icon">🏠</span>溫馨小窩派 (先存第一間房頭期款)</button>
+        <button class="choice-btn" onclick="startCalc('family')"><span class="choice-icon">👨‍👩‍👧‍👦</span>為愛打拼派 (成立家庭養小孩)</button>
+        <button class="choice-btn" onclick="startCalc('travel')"><span class="choice-icon">✈️</span>體驗世界派 (準備專屬旅遊金)</button>
+        <button class="choice-btn" onclick="startCalc('simple')"><span class="choice-icon">🍵</span>極簡躺平派 (簡單過生活)</button>
+        <button class="choice-btn" onclick="startCalc('fire')"><span class="choice-icon">🔥</span>FIRE 自由派 (提早退休找回自由)</button>
     </div>
 
-    <div class="slider-box">
-        <div class="label-row"><span>預計退休年齡</span><span id="v_target_age" class="val">60</span></div>
-        <input type="range" id="target_age" min="30" max="80" step="1" value="60" oninput="update()">
-    </div>
-
-    <div class="slider-box">
-        <div class="label-row">
-            <span>每月存入金額 <span class="daily-note">(約每天存 <span id="v_daily_save">500</span> 元)</span></span>
-            <span id="v_monthly_save" class="val">15000</span>
-        </div>
-        <input type="range" id="monthly_save" min="3000" max="100000" step="1000" value="15000" oninput="update()">
-    </div>
-
-    <div class="slider-box">
-        <div class="label-row"><span>累積期：預估年化報酬率 (%)</span><span id="v_annual_return" class="val">6</span></div>
-        <input type="range" id="annual_return" min="1" max="30" step="0.5" value="6" oninput="update()">
-    </div>
-
-    <div class="slider-box" style="border-color: #ffe082; background: #fffdf5;">
-        <div class="label-row" style="color: #d35400;">
-            <span>退休後：預估配息率 (%) <span class="daily-note" style="color:#d35400;">(決定您的被動收入)</span></span>
-            <span id="v_dividend_rate" class="val highlight-val">5</span>
-        </div>
-        <input type="range" id="dividend_rate" class="dividend-slider" min="2" max="12" step="0.5" value="5" oninput="update()">
-    </div>
-
-    <div id="result-box">
-        <div class="result-title">在您 <span id="display_target_age">60</span> 歲退休（或財務自由）時的預估總資產</div>
-        <div id="final-amount">0 元</div>
+    <div id="calc-screen">
         
-        <div class="payout-box">
-            <div class="payout-title">✨ 退休後每個月的「被動現金流」</div>
-            <div class="payout-amount" id="monthly-payout">0 元</div>
-            <div class="payout-note">將總資產轉入配息工具，不傷本金，每月無腦領取！</div>
+        <div id="goal-alert">載入中...</div>
+
+        <div class="slider-box">
+            <div class="label-row"><span>目前年齡</span><span id="v_current_age" class="val">30</span></div>
+            <input type="range" id="current_age" min="20" max="65" step="1" value="30" oninput="update()">
         </div>
 
-        <div class="calc-details">
-            📊 <strong>精算明細：</strong><br>
-            經過 <span id="display_years">30</span> 年，您實際投入的本金為：<span id="total_principal">0</span> 元。<br>
-            其餘皆為時間為您滾出的複利報酬。
+        <div class="slider-box">
+            <div class="label-row"><span>預計達標年齡</span><span id="v_target_age" class="val">45</span></div>
+            <input type="range" id="target_age" min="30" max="80" step="1" value="45" oninput="update()">
+        </div>
+
+        <div class="slider-box">
+            <div class="label-row">
+                <span>每月存入金額 <br><span class="daily-note">(約每天存 <span id="v_daily_save">500</span> 元)</span></span>
+                <span id="v_monthly_save" class="val">15000</span>
+            </div>
+            <input type="range" id="monthly_save" min="3000" max="100000" step="1000" value="15000" oninput="update()">
+        </div>
+
+        <div class="slider-box">
+            <div class="label-row"><span>預估年化報酬率 (%)</span><span id="v_annual_return" class="val">6</span></div>
+            <input type="range" id="annual_return" min="1" max="30" step="0.5" value="6" oninput="update()">
+        </div>
+
+        <div class="slider-box" style="border-color: #ffe082; background: #fffdf5;">
+            <div class="label-row" style="color: #d35400;">
+                <span>達標後預估配息率 (%) <br><span class="daily-note" style="color:#d35400;">(決定您的被動收入)</span></span>
+                <span id="v_dividend_rate" class="val highlight-val">5</span>
+            </div>
+            <input type="range" id="dividend_rate" class="dividend-slider" min="2" max="12" step="0.5" value="5" oninput="update()">
+        </div>
+
+        <div id="result-box">
+            <div class="result-title">在您 <span id="display_target_age">45</span> 歲達成目標時的預估總資產</div>
+            <div id="final-amount">0 元</div>
+            
+            <div id="milestone-badge"></div>
+            
+            <div class="payout-box">
+                <div class="payout-title">✨ 達標後每個月的「被動現金流」</div>
+                <div class="payout-amount" id="monthly-payout">0 元</div>
+                <div class="payout-note">總資產轉入配息工具，每月無腦領取！</div>
+            </div>
+
+            <div class="calc-details">
+                📊 <strong>精算明細：</strong><br>
+                經過 <span id="display_years">15</span> 年，實際投入的本金為：<span id="total_principal">0</span> 元。<br>
+                其餘皆為時間滾出的複利報酬。
+            </div>
+        </div>
+
+        <button class="cta-btn" onclick="sendToLine()">複製結果，並傳送給理財幫手 🍋</button>
+        <div class="cta-note">點擊後會幫您複製結果，請在跳出的 LINE 畫面「貼上」傳送！</div>
+        
+        <div style="text-align: center; margin-top: 15px;">
+            <a href="#" onclick="location.reload(); return false;" style="color: #6c757d; font-size: 0.9em; text-decoration: underline;">重新選擇人生目標</a>
         </div>
     </div>
-
-    <button class="cta-btn" onclick="sendToLine()">一鍵傳送結果給理財幫手 🍋</button>
-    <div class="cta-note">點擊後會自動為您打開 LINE，請直接「貼上」即可傳送！</div>
 </div>
 
 <script>
+    let userLifeGoal = "";
+
+    function startCalc(type) {
+        document.getElementById('intro-screen').style.display = 'none';
+        document.getElementById('calc-screen').style.display = 'block';
+
+        let alertMsg = "";
+        
+        if (type === 'house') {
+            userLifeGoal = "🏠 溫馨小窩派 (存頭期款)";
+            alertMsg = "🎯 您選擇了【溫馨小窩派】！買房子我們先以『存頭期款』為優先，建議階段性目標抓在 400 萬。讓我們來算算！";
+            document.getElementById('target_age').value = 45; 
+            document.getElementById('monthly_save').value = 15000;
+        } else if (type === 'family') {
+            userLifeGoal = "👨‍👩‍👧‍👦 為愛打拼派 (養小孩)";
+            alertMsg = "🎯 您選擇了【為愛打拼派】！準備養小孩的教育與成長基金，建議階段性目標抓在 500 萬。讓我們來算算！";
+            document.getElementById('target_age').value = 45; 
+            document.getElementById('monthly_save').value = 18000;
+        } else if (type === 'travel') {
+            userLifeGoal = "✈️ 體驗世界派 (旅遊)";
+            alertMsg = "🎯 您選擇了【體驗世界派】！準備一筆不傷本金的專屬旅遊基金，建議階段性目標抓在 500 萬。讓我們來算算！";
+            document.getElementById('target_age').value = 45; 
+            document.getElementById('monthly_save').value = 18000;
+        } else if (type === 'simple') {
+            userLifeGoal = "🍵 極簡躺平派 (簡單生活)";
+            alertMsg = "🎯 您選擇了【極簡躺平派】！生活可以簡單，但醫療防護網要夠，建議總資產目標約 1,500 萬。讓我們來算算！";
+            document.getElementById('target_age').value = 55;
+            document.getElementById('monthly_save').value = 12000;
+        } else if (type === 'fire') {
+            userLifeGoal = "🔥 FIRE 自由派 (提早退休)";
+            alertMsg = "🎯 您選擇了【FIRE 自由派】！想提早開除老闆，時間與本金都要衝刺，建議總資產目標約 3,000 萬。讓我們來算算！";
+            document.getElementById('target_age').value = 50; 
+            document.getElementById('monthly_save').value = 35000;
+        }
+
+        document.getElementById('goal-alert').innerText = alertMsg;
+        update(); 
+    }
+
     function update() {
         let currentAge = parseInt(document.getElementById('current_age').value);
         let targetAge = parseInt(document.getElementById('target_age').value);
@@ -101,7 +180,6 @@
         let rate = parseFloat(document.getElementById('annual_return').value);
         let divRate = parseFloat(document.getElementById('dividend_rate').value);
 
-        // 防呆機制：如果退休年齡拉得比現在年齡小或等於，自動加 1 年
         if (targetAge <= currentAge) {
             targetAge = currentAge + 1;
             document.getElementById('target_age').value = targetAge;
@@ -136,15 +214,32 @@
         document.getElementById('display_years').innerText = years;
         document.getElementById('final-amount').innerText = Math.round(totalFutureValue).toLocaleString() + " 元";
         document.getElementById('total_principal').innerText = totalPrincipal.toLocaleString();
-        
         document.getElementById('monthly-payout').innerText = Math.round(monthlyPayout).toLocaleString() + " 元";
         
-        window.currentResultText = `嗨！理財幫手，我剛算完我的月退俸！🍋\n我預計 ${targetAge} 歲財務自由，預估能滾出 ${Math.round(totalFutureValue).toLocaleString()} 元的資產。\n如果以 ${divRate}% 的配息率來算，之後「每個月」大約有 ${Math.round(monthlyPayout).toLocaleString()} 元的現金流可以花！\n\n我想了解可以怎麼安排配置，才能安心達成這個目標！`;
+        let badge = document.getElementById('milestone-badge');
+        if (totalFutureValue < 1000000) {
+            badge.innerText = "💪 再加把勁，快存到第一桶金了！";
+            badge.style.background = "#fff3cd"; badge.style.color = "#856404"; badge.style.border = "1px solid #ffeeba";
+        } else if (totalFutureValue >= 1000000 && totalFutureValue < 2000000) {
+            badge.innerText = "✨ 恭喜！存到第一桶金了！邁向財富自由並不難！";
+            badge.style.background = "#d4edda"; badge.style.color = "#155724"; badge.style.border = "1px solid #c3e6cb";
+        } else if (totalFutureValue >= 2000000 && totalFutureValue < 5000000) {
+            badge.innerText = "🚀 準備朝第二、第三桶金邁進～！時間複利正在為您工作！";
+            badge.style.background = "#d1ecf1"; badge.style.color = "#0c5460"; badge.style.border = "1px solid #bee5eb";
+        } else if (totalFutureValue >= 5000000 && totalFutureValue < 10000000) {
+            badge.innerText = "🔥 突破 500 萬大關！階段性目標已經順利達陣囉！";
+            badge.style.background = "#f8d7da"; badge.style.color = "#721c24"; badge.style.border = "1px solid #f5c6cb";
+        } else {
+            badge.innerText = "💎 晉升千萬俱樂部！這個數字足以讓您安心享受體驗人生！";
+            badge.style.background = "#e2e3e5"; badge.style.color = "#383d41"; badge.style.border = "1px solid #d6d8db";
+        }
+        
+        window.currentResultText = `嗨！理財幫手，我剛測驗了人生財務計算機！🍋\n我的階段性目標是【${userLifeGoal}】！\n\n我預計 ${targetAge} 歲達成目標，預估能滾出 ${Math.round(totalFutureValue).toLocaleString()} 元的資產。\n如果以 ${divRate}% 的配息率來算，之後「每個月」大約還有 ${Math.round(monthlyPayout).toLocaleString()} 元的現金流可以彈性運用！\n\n「我們一起來達成想要的生活」這句話很打動我，想了解可以怎麼安排配置！`;
     }
 
     function sendToLine() {
         navigator.clipboard.writeText(window.currentResultText).then(() => {
-            alert("✅ 診斷結果已幫您複製！\\n\\n按下「確定」後會自動打開 LINE，請直接在對話框「貼上」傳送給理財幫手喔🍋");
+            alert("✅ 診斷結果已幫您複製！\n\n按下「確定」後會自動打開 LINE，請直接在對話框「長按並貼上」傳送給理財幫手喔🍋");
             window.location.href = "https://line.me/ti/p/IJhcTo9c9s";
         }).catch(err => {
             alert("為您打開 LINE 囉！您可以手動截圖並傳送給理財幫手🍋");
