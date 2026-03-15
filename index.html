@@ -120,7 +120,7 @@
             <div class="calc-details">
                 📊 <strong>精算明細：</strong><br>
                 經過 <span id="display_years">15</span> 年，實際投入的本金為：<span id="total_principal">0</span> 元。<br>
-                其餘皆為時間滾出的複利報酬。
+                其餘皆為時間滾出的複利報酬（採年複利期初結算）。
             </div>
         </div>
 
@@ -142,32 +142,31 @@
 
         let alertMsg = "";
         
-        // 🌟 這裡的預設值已經精算過，一進去就會完美對應你的 5 大目標金額！
         if (type === 'house') {
             userLifeGoal = "🏠 溫馨小窩派 (存頭期款)";
             alertMsg = "🎯 您選擇了【溫馨小窩派】！買房子我們先以『存頭期款』為優先，建議階段性目標抓在 400 萬。讓我們來算算！";
-            document.getElementById('target_age').value = 40; // 10年後
-            document.getElementById('monthly_save').value = 25000; // 滾出來約快 400萬
+            document.getElementById('target_age').value = 40; 
+            document.getElementById('monthly_save').value = 18000; 
         } else if (type === 'family') {
             userLifeGoal = "👨‍👩‍👧‍👦 為愛打拼派 (養小孩)";
             alertMsg = "🎯 您選擇了【為愛打拼派】！準備養小孩的教育與成長基金，建議階段性目標抓在 500 萬。讓我們來算算！";
-            document.getElementById('target_age').value = 42; // 12年後
-            document.getElementById('monthly_save').value = 25000; // 滾出來約 500萬
+            document.getElementById('target_age').value = 42; 
+            document.getElementById('monthly_save').value = 18000; 
         } else if (type === 'travel') {
             userLifeGoal = "✈️ 體驗世界派 (旅遊)";
             alertMsg = "🎯 您選擇了【體驗世界派】！準備一筆不傷本金的專屬旅遊基金，建議階段性目標抓在 500 萬。讓我們來算算！";
-            document.getElementById('target_age').value = 42; // 12年後
-            document.getElementById('monthly_save').value = 25000; // 滾出來約 500萬
+            document.getElementById('target_age').value = 42; 
+            document.getElementById('monthly_save').value = 18000; 
         } else if (type === 'simple') {
             userLifeGoal = "🍵 極簡躺平派 (簡單生活)";
             alertMsg = "🎯 您選擇了【極簡躺平派】！生活可以簡單，但醫療防護網要夠，建議總資產目標約 1,500 萬。讓我們來算算！";
-            document.getElementById('target_age').value = 55; // 25年後
-            document.getElementById('monthly_save').value = 23000; // 滾出來約 1500萬
+            document.getElementById('target_age').value = 55; 
+            document.getElementById('monthly_save').value = 18000; 
         } else if (type === 'fire') {
             userLifeGoal = "🔥 FIRE 自由派 (提早退休)";
             alertMsg = "🎯 您選擇了【FIRE 自由派】！想提早開除老闆其實不需要天文數字，建議總資產目標約 1,500 萬。讓我們來算算！";
-            document.getElementById('target_age').value = 50; // 20年後
-            document.getElementById('monthly_save').value = 34000; // 滾出來約 1500萬
+            document.getElementById('target_age').value = 50; 
+            document.getElementById('monthly_save').value = 25000; 
         }
 
         document.getElementById('goal-alert').innerText = alertMsg;
@@ -195,15 +194,16 @@
         document.getElementById('v_annual_return').innerText = rate;
         document.getElementById('v_dividend_rate').innerText = divRate;
 
-        // 累積期計算
+        // 🌟【對齊三商專屬演算法】期初投入、年複利計算
         const years = targetAge - currentAge;
         const annualRate = rate / 100;
-        const annualSave = save * 12;
+        const annualSave = save * 12; // 一年投入總額
         const totalPrincipal = annualSave * years;
 
         let totalFutureValue = 0;
         if (annualRate > 0) {
-            totalFutureValue = annualSave * ((Math.pow(1 + annualRate, years) - 1) / annualRate);
+            // 期初投入年複利公式：年投入金額 * [((1 + r)^n - 1) / r] * (1 + r)
+            totalFutureValue = annualSave * ((Math.pow(1 + annualRate, years) - 1) / annualRate) * (1 + annualRate);
         } else {
             totalFutureValue = totalPrincipal;
         }
