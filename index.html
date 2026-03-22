@@ -3,253 +3,296 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>人生財務計算機</title>
+    <title>專業理財計算機</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        * { box-sizing: border-box; } 
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; } 
+        body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; background: #FFFFFF; color: #1C2B33; margin: 0 auto; max-width: 600px; padding: 15px; }
+        .card { background: white; padding: 30px 20px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0, 71, 171, 0.08); border: 1px solid #E8EDF2; }
         
-        body { font-family: 'Helvetica Neue', Arial, sans-serif; padding: 12px; margin: 0 auto; max-width: 600px; background: #f8f9fa; color: #333; line-height: 1.6; }
-        .card { background: white; padding: 25px 18px; border-radius: 16px; box-shadow: 0 8px 25px rgba(0,0,0,0.06); width: 100%; }
-        
-        .brand-banner { text-align: center; font-size: 2.5em; margin-bottom: 5px; background: #fff3cd; border-radius: 12px; padding: 8px; }
-        h2 { text-align: center; color: #2c3e50; font-weight: 800; margin-bottom: 5px; font-size: 1.6em; }
-        .subtitle { text-align: center; color: #7f8c8d; font-size: 0.95em; margin-bottom: 25px; font-weight: bold; letter-spacing: 0.5px;}
-        
-        /* 第一關：人生選擇題 */
-        .question-title { text-align: center; font-size: 1.1em; color: #d35400; font-weight: bold; margin-bottom: 15px; }
-        .choice-btn { background: #fff; border: 2px solid #b6d4fe; color: #084298; padding: 15px; border-radius: 12px; font-size: 1.05em; font-weight: bold; width: 100%; margin-bottom: 12px; cursor: pointer; text-align: left; transition: 0.2s; box-shadow: 0 3px 6px rgba(0,0,0,0.03); }
-        .choice-btn:hover, .choice-btn:active { background: #ebf5ff; border-color: #0d6efd; transform: translateY(-2px); }
-        .choice-icon { font-size: 1.3em; margin-right: 10px; }
+        .progress-container { width: 100%; height: 6px; background: #F0F4F8; border-radius: 3px; margin-bottom: 25px; overflow: hidden; }
+        .progress-bar { height: 100%; background: #0047AB; width: 20%; transition: 0.4s; }
 
-        /* 計算機區塊 */
-        #calc-screen { display: none; animation: fadeIn 0.5s; }
+        h2 { text-align: center; color: #002D72; font-weight: 900; margin-top: 0; font-size: 1.6em; letter-spacing: 0.5px; }
+        .subtitle { text-align: center; font-size: 0.95em; color: #5E7185; margin-bottom: 25px; }
+
+        .step-page { display: none; }
+        .active { display: block; animation: fadeIn 0.4s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* 專屬目標提示框 */
-        #goal-alert { background: #fff3cd; color: #856404; padding: 12px 15px; border-radius: 10px; font-size: 0.9em; font-weight: bold; margin-bottom: 20px; border: 1px dashed #ffeeba; }
+        .choice-btn { background: #FFFFFF; border: 1.5px solid #D1D9E0; color: #1C2B33; padding: 18px; border-radius: 15px; font-size: 1.05em; font-weight: bold; width: 100%; margin-bottom: 12px; cursor: pointer; text-align: left; display: block; transition: 0.2s; }
+        .choice-btn:active { transform: translateY(2px); background: #F0F4F8; }
+        .choice-btn:hover { border-color: #0047AB; background: #F8FAFF; }
 
-        .slider-box { margin-bottom: 20px; padding: 12px; background: #fdfdfd; border: 1px solid #eee; border-radius: 10px; }
-        .label-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; font-weight: bold; color: #495057; font-size: 0.95em; flex-wrap: wrap; }
-        .val { color: #0d6efd; font-family: monospace; font-size: 1.15em; background: #e9ecef; padding: 2px 8px; border-radius: 6px; }
-        .highlight-val { color: #e67e22; background: #fdebd0; } 
-        .daily-note { font-size: 0.8em; color: #888; font-weight: normal; margin-top: 4px; }
+        .slider-box { margin-bottom: 15px; padding: 20px 15px; background: #FFFFFF; border: 1.5px solid #F0F4F8; border-radius: 12px; }
+        .label-row { display: flex; justify-content: space-between; font-weight: bold; font-size: 0.95em; align-items: center; color: #002D72; }
+        .val { color: #FFFFFF; background: #0047AB; padding: 4px 12px; border-radius: 6px; font-family: 'Roboto Mono', monospace; font-size: 1.1em; }
+        input[type=range] { width: 100%; margin-top: 15px; accent-color: #0047AB; cursor: pointer; }
+
+        #result-box { margin-top: 20px; padding: 25px; border-radius: 15px; background: #F8FAFF; border: 1px solid #DDE6F0; text-align: center; }
+        .result-val { font-size: 2.4em; color: #0047AB; font-weight: 900; margin: 5px 0; }
         
-        input[type=range] { width: 100%; cursor: pointer; accent-color: #0d6efd; height: 6px; margin-top: 8px; }
-        input[type=range].dividend-slider { accent-color: #e67e22; }
+        .principal-val { font-size: 0.95em; color: #5E7185; font-weight: bold; margin-bottom: 10px; padding-bottom: 15px; border-bottom: 1px dashed #D1D9E0; }
+
+        .chart-container { position: relative; height: 260px; width: 100%; margin: 20px 0; background: white; border-radius: 10px; padding: 10px; border: 1px solid #F0F4F8; }
+
+        .cta-btn { background: #0047AB; color: white; border: none; padding: 18px; border-radius: 12px; font-size: 1.1em; font-weight: bold; width: 100%; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 15px rgba(0, 71, 171, 0.2); }
+        .cta-btn:active { transform: scale(0.98); }
         
-        #result-box { margin-top: 25px; padding: 20px 15px; border-radius: 12px; background: #ebf5ff; text-align: center; border: 1px solid #b6d4fe; position: relative; }
-        .result-title { font-size: 1.05em; color: #084298; font-weight: bold; margin-bottom: 8px; }
-        #final-amount { font-size: 2.4em; color: #0d6efd; font-weight: 900; margin: 5px 0; letter-spacing: -1px; word-break: break-all; }
+        .secondary-btn { background: #FFFFFF; color: #0047AB; border: 2px solid #0047AB; margin-top: 15px; box-shadow: none; }
+        .secondary-btn:hover { background: #F8FAFF; }
         
-        #milestone-badge { display: block; padding: 8px 12px; border-radius: 8px; font-size: 0.85em; font-weight: bold; margin-top: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: all 0.3s ease; }
+        .link-btn { display: block; text-align: center; background: #E6EEFF; color: #0047AB; border: 1px solid #0047AB; padding: 12px; border-radius: 8px; font-size: 0.9em; font-weight: bold; text-decoration: none; margin-top: 15px; transition: 0.2s; }
+        .link-btn:hover { background: #0047AB; color: #FFFFFF; }
 
-        .payout-box { margin-top: 15px; padding: 15px; background: #fff8e1; border: 1px solid #ffe082; border-radius: 10px; }
-        .payout-title { font-size: 1.05em; color: #d35400; font-weight: bold; margin-bottom: 5px; }
-        .payout-amount { font-size: 2em; color: #e67e22; font-weight: 900; word-break: break-all; }
-        .payout-note { font-size: 0.8em; color: #a04000; margin-top: 5px; }
-
-        .calc-details { font-size: 0.85em; color: #6c757d; margin-top: 15px; text-align: left; background: rgba(255,255,255,0.6); padding: 10px; border-radius: 8px; }
-
-        .cta-btn { background: #06C755; color: white; border: none; padding: 15px 10px; font-size: 1.05em; border-radius: 10px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 25px; transition: background 0.2s; box-shadow: 0 4px 10px rgba(6, 199, 85, 0.3); }
-        .cta-btn:hover { background: #05b04b; }
-        .cta-note { text-align: center; font-size: 0.8em; color: #6c757d; margin-top: 10px; }
+        .component-box { background: #FFFFFF; border: 1.5px solid #E8EDF2; padding: 20px; border-radius: 15px; margin-top: 15px; }
+        .comp-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #F0F4F8; font-size: 0.95em; }
+        .comp-item:last-child { border-bottom: none; }
+        .comp-name { font-weight: bold; color: #002D72; }
+        .comp-tag { font-size: 0.8em; color: #0047AB; background: #E6EEFF; padding: 2px 8px; border-radius: 4px; font-weight: bold; }
+        
+        .highlight-text { font-size: 1.4em; color: #C62828; font-weight: 900; margin: 5px 0 5px 0; text-align: center; font-family: Tahoma, sans-serif;}
+        .highlight-sub { font-size: 0.85em; color: #5E7185; text-align: center; margin-bottom: 15px; font-weight: bold;}
     </style>
 </head>
 <body>
 
 <div class="card">
-    <div class="brand-banner">🍋</div>
-    <h2>人生財務計算機</h2>
-    <div class="subtitle">我們一起來達成你想要的生活 ✨</div>
+    <div class="progress-container"><div class="progress-bar" id="progress"></div></div>
     
-    <div id="intro-screen">
-        <div class="question-title">請問您未來，最渴望達成的生活狀態是什麼？</div>
-        <button class="choice-btn" onclick="startCalc('house')"><span class="choice-icon">🏠</span>溫馨小窩派 (先存第一間房頭期款)</button>
-        <button class="choice-btn" onclick="startCalc('family')"><span class="choice-icon">👨‍👩‍👧‍👦</span>為愛打拼派 (成立家庭養小孩)</button>
-        <button class="choice-btn" onclick="startCalc('travel')"><span class="choice-icon">✈️</span>體驗世界派 (準備專屬旅遊金)</button>
-        <button class="choice-btn" onclick="startCalc('simple')"><span class="choice-icon">🍵</span>極簡躺平派 (簡單過生活)</button>
-        <button class="choice-btn" onclick="startCalc('fire')"><span class="choice-icon">🔥</span>FIRE 自由派 (提早退休找回自由)</button>
+    <div id="page1" class="step-page active">
+        <h2>理財計算機</h2>
+        <div style="background: #E6EEFF; padding: 15px; border-radius: 12px; font-size: 0.9em; border-left: 5px solid #0047AB; margin-bottom: 20px; color: #002D72;">💡 現在永遠是投入的最低點。</div>
+        <div class="form-group">
+            <label style="display: block; font-weight: bold; margin-bottom: 8px;">目前年齡？</label>
+            <input type="number" id="user_age" style="width: 100%; padding: 14px; border: 1.5px solid #D1D9E0; border-radius: 12px;" value="25" min="18">
+        </div>
+        <button class="cta-btn" onclick="nextPage(2)">下一步</button>
     </div>
 
-    <div id="calc-screen">
-        
-        <div id="goal-alert">載入中...</div>
+    <div id="page2" class="step-page">
+        <h2>理財基因分析</h2>
+        <div class="subtitle">評估資產配置的抗壓性與成長潛力</div>
+        <select id="user_style" style="width: 100%; padding: 14px; border: 1.5px solid #D1D9E0; border-radius: 12px; margin-bottom: 20px; font-weight: bold;">
+            <option value="保守型">🛡️ 保守型 (著重資產防禦)</option>
+            <option value="穩健型" selected>⚖️ 穩健型 (平衡風險回報)</option>
+            <option value="積極型">🔥 積極型 (極大化資本利得)</option>
+        </select>
+        <button class="cta-btn" onclick="nextPage(3)">下一步</button>
+    </div>
+
+    <div id="page3" class="step-page">
+        <h2>設定財務目標</h2>
+        <button class="choice-btn" onclick="goCalc('買房頭期款基金', 4000000)">🏠 買房頭期款基金 (400 萬)</button>
+        <button class="choice-btn" onclick="goCalc('老闆創業啟動金', 2000000)">💼 老闆創業啟動金 (200 萬)</button>
+        <button class="choice-btn" onclick="goCalc('體驗世界出國金', 5000000)">✈️ 體驗世界出國金 (500 萬)</button>
+        <button class="choice-btn" onclick="goCalc('提早退休躺平金', 10000000)">🏖️ 提早退休躺平金 (1,000 萬)</button>
+        <button class="choice-btn" onclick="goCalc('家家有本難念金', 3000000)">🛡️ 家家有本難念金 (300 萬)</button>
+    </div>
+
+    <div id="page4" class="step-page">
+        <h2 style="font-size: 1.3em; color: #002D72;">專屬財務演練</h2>
+        <div id="goal-tag" style="color:#0047AB; font-size:0.95em; font-weight:bold; text-align:center; margin-bottom:15px;"></div>
 
         <div class="slider-box">
-            <div class="label-row"><span>目前年齡</span><span id="v_current_age" class="val">30</span></div>
-            <input type="range" id="current_age" min="20" max="65" step="1" value="30" oninput="update()">
+            <div class="label-row"><span>目標年齡</span><span id="v_target_age" class="val">45</span></div>
+            <input type="range" id="target_age" min="19" max="80" value="45" oninput="updateAll()">
         </div>
 
         <div class="slider-box">
-            <div class="label-row"><span>預計達標年齡</span><span id="v_target_age" class="val">45</span></div>
-            <input type="range" id="target_age" min="30" max="80" step="1" value="45" oninput="update()">
+            <div class="label-row"><span>每月儲蓄</span><span id="v_monthly_save" class="val">10000</span></div>
+            <input type="range" id="monthly_save" min="1000" max="100000" step="1000" value="10000" oninput="updateAll()">
         </div>
 
         <div class="slider-box">
-            <div class="label-row">
-                <span>每月存入金額 <br><span class="daily-note">(約每天存 <span id="v_daily_save">500</span> 元)</span></span>
-                <span id="v_monthly_save" class="val">15000</span>
-            </div>
-            <input type="range" id="monthly_save" min="3000" max="100000" step="1000" value="15000" oninput="update()">
-        </div>
-
-        <div class="slider-box">
-            <div class="label-row"><span>預估年化報酬率 (%)</span><span id="v_annual_return" class="val">6</span></div>
-            <input type="range" id="annual_return" min="1" max="30" step="0.5" value="6" oninput="update()">
-        </div>
-
-        <div class="slider-box" style="border-color: #ffe082; background: #fffdf5;">
-            <div class="label-row" style="color: #d35400;">
-                <span>達標後預估配息率 (%) <br><span class="daily-note" style="color:#d35400;">(決定您的被動收入)</span></span>
-                <span id="v_dividend_rate" class="val highlight-val">5</span>
-            </div>
-            <input type="range" id="dividend_rate" class="dividend-slider" min="2" max="12" step="0.5" value="5" oninput="update()">
+            <div class="label-row"><span>預期年化報酬率 (%)</span><span id="v_roi" class="val">6</span></div>
+            <input type="range" id="roi" min="1" max="30" step="1" value="6" oninput="updateAll()">
         </div>
 
         <div id="result-box">
-            <div class="result-title">在您 <span id="display_target_age">45</span> 歲達成目標時的預估總資產</div>
-            <div id="final-amount">0 元</div>
+            <div style="font-size: 0.9em; font-weight:bold; color: #1C2B33;">目標年齡預估總資產</div>
+            <div id="final-amount" class="result-val">0 元</div>
             
-            <div id="milestone-badge"></div>
+            <div class="principal-val">累積投入本金：<span id="total_p">0</span> 元</div>
             
-            <div class="payout-box">
-                <div class="payout-title">✨ 達標後每個月的「被動現金流」</div>
-                <div class="payout-amount" id="monthly-payout">0 元</div>
-                <div class="payout-note">總資產轉入配息工具，每月無腦領取！</div>
-            </div>
-
-            <div class="calc-details">
-                📊 <strong>精算明細：</strong><br>
-                經過 <span id="display_years">15</span> 年，實際投入的本金為：<span id="total_principal">0</span> 元。<br>
-                其餘皆為時間滾出的複利報酬（採年複利期初結算）。
-            </div>
+            <div class="chart-container"><canvas id="wealthChart"></canvas></div>
+            
+            <div id="analysis-text" style="font-size:0.85em; color:#1C2B33; text-align:left; line-height:1.6; padding: 12px; background: white; border-radius: 8px; margin-top: 15px; border-left: 4px solid #D84315;"></div>
         </div>
 
-        <button class="cta-btn" onclick="sendToLine()">複製結果，並傳送給理財幫手 🍋</button>
-        <div class="cta-note">點擊後會幫您複製結果，請在跳出的 LINE 畫面「貼上」傳送！</div>
+        <button class="cta-btn" onclick="nextPage(5)" style="margin-top: 20px;">投資標的分析</button>
+    </div>
+
+    <div id="page5" class="step-page">
+        <h2>安聯台灣科技</h2>
+        <div class="subtitle">十年報酬率數據</div>
         
-        <div style="text-align: center; margin-top: 15px;">
-            <a href="#" onclick="location.reload(); return false;" style="color: #6c757d; font-size: 0.9em; text-decoration: underline;">重新選擇人生目標</a>
+        <div style="background: #F8FAFF; border-radius: 12px; padding: 15px; border: 1.5px solid #DDE6F0; margin-bottom: 15px;">
+            <div style="font-size: 0.9em; color: #5E7185; text-align: center; font-weight: bold;">安聯台灣科技 十年歷史走勢模擬</div>
+            <div class="highlight-text" style="color:#C62828;">十年累積報酬破千趴</div>
+            <div class="highlight-sub">年化報酬約 20% ~ 25%</div>
+            
+            <div class="chart-container" style="height: 220px; padding: 5px; border: none; background: #FFFFFF; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 45, 114, 0.05); margin-top: 10px;">
+                <canvas id="fundHistoryChart"></canvas>
+            </div>
+            
+            <div style="font-size: 0.8em; color: #78909C; text-align: left; margin-top: 10px; line-height: 1.5;">
+                💡 <b>看出端倪了嗎？</b> 圖中的回檔包含了中美貿易戰、疫情與升息縮表。只要堅持不退場，每一次的低點都是未來爆發的起點。
+            </div>
+            
+            <a href="https://mlivul.moneydj.com/main.html?sUrl=%2FW%2FWR%2FWR03.DJHTM%3FA%3DACDD04-DIA00060%26B%3DEBTWIT%26C%3D0%26D%3D0%26E%3D0%26F%3D0%26G%3D0%26H%3D10%26I%3D0%26J%3D0%26COMPARE%3D1%26SFOCUSYEAR%3D1" target="_blank" class="link-btn">
+                📡 點此連線即時資料庫驗證
+            </a>
         </div>
+
+        <div class="component-box">
+            <div style="font-size: 0.9em; color: #002D72; margin-bottom: 10px; font-weight: bold; text-align: center;">核心佈局：一籃子台灣科技巨頭</div>
+            <div class="comp-item"><span class="comp-name">護國神山：台積電 (TSMC)</span><span class="comp-tag">半導體龍頭</span></div>
+            <div class="comp-item"><span class="comp-name">IC設計旗艦：聯發科</span><span class="comp-tag">5G與邊緣運算</span></div>
+            <div class="comp-item"><span class="comp-name">AI 基礎設施：廣達 / 緯穎</span><span class="comp-tag">全球伺服器</span></div>
+            <div class="comp-item"><span class="comp-name">高階製程關鍵：世芯-KY</span><span class="comp-tag">AI 特殊晶片</span></div>
+        </div>
+
+        <button class="cta-btn" style="margin-top: 25px;" onclick="nextPage(4)">返回套用真實報酬率試算</button>
+        <button class="cta-btn secondary-btn" onclick="location.reload()">重新設定全新目標</button>
     </div>
 </div>
 
 <script>
-    let userLifeGoal = "";
+    let currentStep = 1; let uAge = 18; let gMoney = 10000000; 
+    let lineChartObj = null; let fundChartObj = null;
 
-    function startCalc(type) {
-        document.getElementById('intro-screen').style.display = 'none';
-        document.getElementById('calc-screen').style.display = 'block';
-
-        let alertMsg = "";
+    function nextPage(step) {
+        document.getElementById(`page${currentStep}`).style.display = 'none';
+        document.getElementById(`page${step}`).style.display = 'block';
+        document.getElementById(`page${step}`).classList.add('active');
+        currentStep = step;
         
-        if (type === 'house') {
-            userLifeGoal = "🏠 溫馨小窩派 (存頭期款)";
-            alertMsg = "🎯 您選擇了【溫馨小窩派】！買房子我們先以『存頭期款』為優先，建議階段性目標抓在 400 萬。讓我們來算算！";
-            document.getElementById('target_age').value = 40; 
-            document.getElementById('monthly_save').value = 18000; 
-        } else if (type === 'family') {
-            userLifeGoal = "👨‍👩‍👧‍👦 為愛打拼派 (養小孩)";
-            alertMsg = "🎯 您選擇了【為愛打拼派】！準備養小孩的教育與成長基金，建議階段性目標抓在 500 萬。讓我們來算算！";
-            document.getElementById('target_age').value = 42; 
-            document.getElementById('monthly_save').value = 18000; 
-        } else if (type === 'travel') {
-            userLifeGoal = "✈️ 體驗世界派 (旅遊)";
-            alertMsg = "🎯 您選擇了【體驗世界派】！準備一筆不傷本金的專屬旅遊基金，建議階段性目標抓在 500 萬。讓我們來算算！";
-            document.getElementById('target_age').value = 42; 
-            document.getElementById('monthly_save').value = 18000; 
-        } else if (type === 'simple') {
-            userLifeGoal = "🍵 極簡躺平派 (簡單生活)";
-            alertMsg = "🎯 您選擇了【極簡躺平派】！生活可以簡單，但醫療防護網要夠，建議總資產目標約 1,500 萬。讓我們來算算！";
-            document.getElementById('target_age').value = 55; 
-            document.getElementById('monthly_save').value = 18000; 
-        } else if (type === 'fire') {
-            userLifeGoal = "🔥 FIRE 自由派 (提早退休)";
-            alertMsg = "🎯 您選擇了【FIRE 自由派】！想提早開除老闆其實不需要天文數字，建議總資產目標約 1,500 萬。讓我們來算算！";
-            document.getElementById('target_age').value = 50; 
-            document.getElementById('monthly_save').value = 25000; 
+        if (step !== 5) {
+            document.getElementById('progress').style.width = (step * 20) + "%";
+        }
+        
+        if (step === 2) {
+            uAge = parseInt(document.getElementById('user_age').value) || 18;
+            document.getElementById('target_age').min = uAge + 1;
         }
 
-        document.getElementById('goal-alert').innerText = alertMsg;
-        update(); 
+        if (step === 5) {
+            setTimeout(renderFundHistoryChart, 150);
+        }
     }
 
-    function update() {
-        let currentAge = parseInt(document.getElementById('current_age').value);
-        let targetAge = parseInt(document.getElementById('target_age').value);
-        let save = parseFloat(document.getElementById('monthly_save').value);
-        let rate = parseFloat(document.getElementById('annual_return').value);
-        let divRate = parseFloat(document.getElementById('dividend_rate').value);
+    function goCalc(name, money) {
+        gMoney = money;
+        document.getElementById('goal-tag').innerText = `目標：${name}`;
+        nextPage(4);
+        setTimeout(updateAll, 300);
+    }
 
-        if (targetAge <= currentAge) {
-            targetAge = currentAge + 1;
-            document.getElementById('target_age').value = targetAge;
-        }
-
-        let dailySave = Math.round(save / 30);
-
-        document.getElementById('v_current_age').innerText = currentAge;
-        document.getElementById('v_target_age').innerText = targetAge;
+    function updateAll() {
+        const tAge = parseInt(document.getElementById('target_age').value);
+        const save = parseInt(document.getElementById('monthly_save').value);
+        const roi = parseInt(document.getElementById('roi').value) / 100;
+        document.getElementById('v_target_age').innerText = tAge;
         document.getElementById('v_monthly_save').innerText = save.toLocaleString();
-        document.getElementById('v_daily_save').innerText = dailySave.toLocaleString();
-        document.getElementById('v_annual_return').innerText = rate;
-        document.getElementById('v_dividend_rate').innerText = divRate;
+        document.getElementById('v_roi').innerText = (roi * 100).toFixed(0);
 
-        // 🌟【對齊三商專屬演算法】期初投入、年複利計算
-        const years = targetAge - currentAge;
-        const annualRate = rate / 100;
-        const annualSave = save * 12; // 一年投入總額
-        const totalPrincipal = annualSave * years;
+        let labels = []; let fvData = []; let bankData = [];
+        let fv = 0; let bank = 0; let totalPrincipal = 0;
+        const years = tAge - uAge;
+        const annualSave = save * 12;
 
-        let totalFutureValue = 0;
-        if (annualRate > 0) {
-            // 期初投入年複利公式：年投入金額 * [((1 + r)^n - 1) / r] * (1 + r)
-            totalFutureValue = annualSave * ((Math.pow(1 + annualRate, years) - 1) / annualRate) * (1 + annualRate);
-        } else {
-            totalFutureValue = totalPrincipal;
-        }
-
-        // 消耗期計算
-        let monthlyPayout = (totalFutureValue * (divRate / 100)) / 12;
-
-        document.getElementById('display_target_age').innerText = targetAge;
-        document.getElementById('display_years').innerText = years;
-        document.getElementById('final-amount').innerText = Math.round(totalFutureValue).toLocaleString() + " 元";
-        document.getElementById('total_principal').innerText = totalPrincipal.toLocaleString();
-        document.getElementById('monthly-payout').innerText = Math.round(monthlyPayout).toLocaleString() + " 元";
-        
-        let badge = document.getElementById('milestone-badge');
-        if (totalFutureValue < 1000000) {
-            badge.innerText = "💪 再加把勁，快存到第一桶金了！";
-            badge.style.background = "#fff3cd"; badge.style.color = "#856404"; badge.style.border = "1px solid #ffeeba";
-        } else if (totalFutureValue >= 1000000 && totalFutureValue < 2000000) {
-            badge.innerText = "✨ 恭喜！存到第一桶金了！邁向目標並不難！";
-            badge.style.background = "#d4edda"; badge.style.color = "#155724"; badge.style.border = "1px solid #c3e6cb";
-        } else if (totalFutureValue >= 2000000 && totalFutureValue < 5000000) {
-            badge.innerText = "🚀 準備朝第二、第三桶金邁進～！時間複利正在為您工作！";
-            badge.style.background = "#d1ecf1"; badge.style.color = "#0c5460"; badge.style.border = "1px solid #bee5eb";
-        } else if (totalFutureValue >= 5000000 && totalFutureValue < 10000000) {
-            badge.innerText = "🔥 突破 500 萬大關！階段性目標已經順利達陣囉！";
-            badge.style.background = "#f8d7da"; badge.style.color = "#721c24"; badge.style.border = "1px solid #f5c6cb";
-        } else {
-            badge.innerText = "💎 晉升千萬俱樂部！這個數字足以讓您安心享受體驗人生！";
-            badge.style.background = "#e2e3e5"; badge.style.color = "#383d41"; badge.style.border = "1px solid #d6d8db";
+        for (let i = 0; i <= years; i++) {
+            labels.push((uAge + i) + "歲");
+            if (i === 0) { fvData.push(0); bankData.push(0); } else {
+                fv = (fv + annualSave) * (1 + roi);
+                bank = (bank + annualSave) * 1.012; 
+                totalPrincipal += annualSave;
+                fvData.push(Math.round(fv)); bankData.push(Math.round(bank));
+            }
         }
         
-        window.currentResultText = `嗨！理財幫手，我剛測驗了人生財務計算機！🍋\n我的階段性目標是【${userLifeGoal}】！\n\n我預計 ${targetAge} 歲達成目標，預估能滾出 ${Math.round(totalFutureValue).toLocaleString()} 元的資產。\n如果以 ${divRate}% 的配息率來算，之後「每個月」大約還有 ${Math.round(monthlyPayout).toLocaleString()} 元的現金流可以彈性運用！\n\n「我們一起來達成想要的生活」這句話很打動我，想了解可以怎麼安排配置！`;
+        const finalValue = Math.round(fv);
+        document.getElementById('final-amount').innerText = finalValue.toLocaleString() + " 元";
+        document.getElementById('total_p').innerText = totalPrincipal.toLocaleString();
+
+        // 精準算出複利賺了多少錢，強化獲得感
+        const compoundEarned = Math.max(0, finalValue - totalPrincipal);
+        
+        document.getElementById('analysis-text').innerHTML = 
+            `<span style="color:#D84315;"><b>🔥 複利引擎發威：</b></span> 透過時間與持續投入，您額外滾出了 <b>${compoundEarned.toLocaleString()}</b> 元的驚人財富！這就是複利的威力。`;
+
+        renderLineChart(labels, fvData, bankData, gMoney);
     }
 
-    function sendToLine() {
-        navigator.clipboard.writeText(window.currentResultText).then(() => {
-            alert("✅ 診斷結果已幫您複製！\n\n按下「確定」後會自動打開 LINE，請直接在對話框「長按並貼上」傳送給理財幫手喔🍋");
-            window.location.href = "https://line.me/ti/p/IJhcTo9c9s";
-        }).catch(err => {
-            alert("為您打開 LINE 囉！您可以手動截圖並傳送給理財幫手🍋");
-            window.location.href = "https://line.me/ti/p/IJhcTo9c9s";
+    function renderLineChart(labels, fv, bank, goal) {
+        const ctx = document.getElementById('wealthChart').getContext('2d');
+        if (lineChartObj) lineChartObj.destroy();
+        lineChartObj = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    { label: '財務目標線', data: Array(labels.length).fill(goal), borderColor: '#C62828', borderDash: [5, 5], borderWidth: 1.5, pointRadius: 0, fill: false },
+                    { label: '複利成長曲線', data: fv, borderColor: '#0047AB', backgroundColor: 'rgba(0, 71, 171, 0.15)', fill: true, tension: 0.4, pointRadius: 0, borderWidth: 3 },
+                    { label: '一般定存參照', data: bank, borderColor: '#A5B4C0', borderDash: [3, 3], fill: false, pointRadius: 0 }
+                ]
+            },
+            options: { 
+                responsive: true, maintainAspectRatio: false, 
+                plugins: { legend: { position: 'bottom', labels: { font: { size: 10 } } } },
+                scales: { y: { beginAtZero: true, ticks: { callback: v => v >= 10000 ? (v/10000)+'萬' : v } } }
+            }
         });
     }
 
-    update();
-</script>
+    function renderFundHistoryChart() {
+        const ctx = document.getElementById('fundHistoryChart').getContext('2d');
+        if (fundChartObj) fundChartObj.destroy();
+        
+        const timeLabels = ['2016', '2017', '2018', '2019', '2020', '2021', '2022', '2023', '2024', '2025', '2026'];
+        const growthData = [100, 140, 115, 180, 250, 420, 280, 520, 850, 1150, 1320]; 
 
+        fundChartObj = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: timeLabels,
+                datasets: [{
+                    label: '安聯台灣科技基金淨值走勢',
+                    data: growthData,
+                    borderColor: '#C62828',
+                    backgroundColor: (context) => {
+                        const bgCtx = context.chart.ctx;
+                        const gradient = bgCtx.createLinearGradient(0, 0, 0, 200);
+                        gradient.addColorStop(0, 'rgba(198, 40, 40, 0.25)');
+                        gradient.addColorStop(1, 'rgba(198, 40, 40, 0.0)');
+                        return gradient;
+                    },
+                    fill: true,
+                    tension: 0.35,
+                    borderWidth: 2.5,
+                    pointBackgroundColor: '#FFFFFF',
+                    pointBorderColor: '#C62828',
+                    pointRadius: 3,
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { 
+                    legend: { display: false }, 
+                    tooltip: { 
+                        callbacks: { label: (ctx) => ` 淨值增長指數: ${ctx.raw}` } 
+                    } 
+                },
+                scales: {
+                    y: { display: false, beginAtZero: false }, 
+                    x: { grid: { display: false }, ticks: { color: '#78909C', font: { size: 10 }, maxRotation: 45, minRotation: 45 } }
+                }
+            }
+        });
+    }
+</script>
 </body>
 </html>
