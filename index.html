@@ -3,26 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>專業理財計算機</title>
+    <title>專業理財計算機 - 終極持股透視版</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; } 
         body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; background: #FFFFFF; color: #1C2B33; margin: 0 auto; max-width: 600px; padding: 15px; }
-        .card { background: white; padding: 30px 20px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0, 71, 171, 0.08); border: 1px solid #E8EDF2; }
+        .card { background: white; padding: 25px 20px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0, 71, 171, 0.08); border: 1px solid #E8EDF2; }
         
-        .progress-container { width: 100%; height: 6px; background: #F0F4F8; border-radius: 3px; margin-bottom: 25px; overflow: hidden; }
+        .progress-container { width: 100%; height: 6px; background: #F0F4F8; border-radius: 3px; margin-bottom: 20px; overflow: hidden; }
         .progress-bar { height: 100%; background: #0047AB; width: 20%; transition: 0.4s; }
 
-        h2 { text-align: center; color: #002D72; font-weight: 900; margin-top: 0; font-size: 1.6em; letter-spacing: 0.5px; }
-        .subtitle { text-align: center; font-size: 0.95em; color: #5E7185; margin-bottom: 25px; }
+        h2 { text-align: center; color: #002D72; font-weight: 900; margin-top: 0; font-size: 1.5em; letter-spacing: 0.5px; }
+        .subtitle { text-align: center; font-size: 0.9em; color: #5E7185; margin-bottom: 20px; }
 
         .step-page { display: none; }
         .active { display: block; animation: fadeIn 0.4s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .choice-btn { background: #FFFFFF; border: 1.5px solid #D1D9E0; color: #1C2B33; padding: 18px; border-radius: 15px; font-size: 1.05em; font-weight: bold; width: 100%; margin-bottom: 12px; cursor: pointer; text-align: left; display: block; transition: 0.2s; }
+        .choice-btn { background: #FFFFFF; border: 1.5px solid #D1D9E0; color: #1C2B33; padding: 16px; border-radius: 12px; font-size: 1em; font-weight: bold; width: 100%; margin-bottom: 12px; cursor: pointer; text-align: left; display: block; transition: 0.2s; }
         .choice-btn:active { transform: translateY(2px); background: #F0F4F8; }
         .choice-btn:hover { border-color: #0047AB; background: #F8FAFF; }
+
+        /* KYC 測驗選項樣式 */
+        .quiz-q-title { font-size: 0.95em; font-weight: bold; color: #002D72; margin: 20px 0 10px 0; line-height: 1.4; padding-left: 5px; border-left: 3px solid #0047AB; }
+        .quiz-btn { background: #FFFFFF; border: 2px solid #E8EDF2; color: #5E7185; padding: 12px; border-radius: 10px; font-size: 0.9em; font-weight: bold; width: 100%; margin-bottom: 8px; cursor: pointer; text-align: left; transition: 0.2s; }
+        .quiz-btn.selected { border-color: #0047AB; background: #F0F4FF; color: #0047AB; box-shadow: 0 4px 10px rgba(0, 71, 171, 0.1); }
+        #kyc-result-box { display: none; margin-top: 25px; padding: 20px; border-radius: 15px; background: #F8FAFF; border: 2px dashed #0047AB; text-align: center; animation: fadeIn 0.5s; }
 
         .slider-box { margin-bottom: 15px; padding: 20px 15px; background: #FFFFFF; border: 1.5px solid #F0F4F8; border-radius: 12px; }
         .label-row { display: flex; justify-content: space-between; font-weight: bold; font-size: 0.95em; align-items: center; color: #002D72; }
@@ -30,37 +36,28 @@
         input[type=range] { width: 100%; margin-top: 15px; accent-color: #0047AB; cursor: pointer; }
 
         #result-box { margin-top: 20px; padding: 25px; border-radius: 15px; background: #F8FAFF; border: 1px solid #DDE6F0; text-align: center; }
-        .result-val { font-size: 2.4em; color: #0047AB; font-weight: 900; margin: 5px 0; }
-        
-        .principal-val { font-size: 0.95em; color: #5E7185; font-weight: bold; margin-bottom: 10px; padding-bottom: 15px; border-bottom: 1px dashed #D1D9E0; }
+        .result-val { font-size: 2.2em; color: #0047AB; font-weight: 900; margin: 5px 0; }
+        .principal-val { font-size: 0.9em; color: #5E7185; font-weight: bold; margin-bottom: 10px; padding-bottom: 15px; border-bottom: 1px dashed #D1D9E0; }
 
-        .chart-container { position: relative; height: 260px; width: 100%; margin: 20px 0; background: white; border-radius: 10px; padding: 10px; border: 1px solid #F0F4F8; }
+        .chart-container { position: relative; height: 240px; width: 100%; margin: 15px 0; background: white; border-radius: 10px; padding: 10px; border: 1px solid #F0F4F8; }
 
-        .cta-btn { background: #0047AB; color: white; border: none; padding: 18px; border-radius: 12px; font-size: 1.1em; font-weight: bold; width: 100%; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 15px rgba(0, 71, 171, 0.2); }
+        .cta-btn { background: #0047AB; color: white; border: none; padding: 18px; border-radius: 12px; font-size: 1.05em; font-weight: bold; width: 100%; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 15px rgba(0, 71, 171, 0.2); margin-top: 15px;}
         .cta-btn:active { transform: scale(0.98); }
-        
-        .secondary-btn { background: #FFFFFF; color: #0047AB; border: 2px solid #0047AB; margin-top: 15px; box-shadow: none; }
-        .secondary-btn:hover { background: #F8FAFF; }
+        .secondary-btn { background: #FFFFFF; color: #0047AB; border: 2px solid #0047AB; box-shadow: none; }
+        .secondary-btn:hover { background: #F0F4FF; }
         
         .link-btn { display: block; text-align: center; background: #E6EEFF; color: #0047AB; border: 1px solid #0047AB; padding: 12px; border-radius: 8px; font-size: 0.9em; font-weight: bold; text-decoration: none; margin-top: 15px; transition: 0.2s; }
-        .link-btn:hover { background: #0047AB; color: #FFFFFF; }
-
-        .component-box { background: #FFFFFF; border: 1.5px solid #E8EDF2; padding: 20px; border-radius: 15px; margin-top: 15px; }
-        .comp-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #F0F4F8; font-size: 0.95em; }
-        .comp-item:last-child { border-bottom: none; }
-        .comp-name { font-weight: bold; color: #002D72; }
-        .comp-tag { font-size: 0.8em; color: #0047AB; background: #E6EEFF; padding: 2px 8px; border-radius: 4px; font-weight: bold; }
         
-        .highlight-text { font-size: 1.4em; color: #C62828; font-weight: 900; margin: 5px 0 5px 0; text-align: center; font-family: Tahoma, sans-serif;}
-        .highlight-sub { font-size: 0.85em; color: #5E7185; text-align: center; margin-bottom: 15px; font-weight: bold;}
+        /* 持股成分樣式 */
+        .component-box { background: #FFFFFF; border: 1.5px solid #E8EDF2; padding: 15px; border-radius: 12px; margin-top: 15px; text-align: left; }
+        .comp-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #F0F4F8; font-size: 0.9em; }
+        .comp-item:last-child { border-bottom: none; }
+        .comp-name { font-weight: bold; color: #1C2B33; }
+        .comp-tag { font-size: 0.8em; color: #0047AB; background: #E6EEFF; padding: 3px 8px; border-radius: 6px; font-weight: bold; }
 
-        /* KYC 新增樣式 */
-        .question-block { margin-bottom: 25px; text-align: left; }
-        .question-title { font-size: 1.05em; font-weight: bold; margin-bottom: 12px; color: #002D72; }
-        .option-btn { display: block; width: 100%; padding: 14px; margin-bottom: 10px; background-color: #FFFFFF; border: 2px solid #E8EDF2; border-radius: 10px; font-size: 1em; text-align: left; cursor: pointer; transition: all 0.2s ease; color: #1C2B33; }
-        .option-btn:active { transform: scale(0.98); }
-        .option-btn.selected { background-color: #E6EEFF; border-color: #0047AB; color: #0047AB; font-weight: bold; }
-        #kyc-result-section { display: none; text-align: center; padding: 20px; background-color: #F8FAFF; border: 2px solid #0047AB; border-radius: 12px; margin-top: 20px; margin-bottom: 20px; }
+        .vs-card { display: flex; justify-content: space-between; margin-top: 15px; }
+        .vs-item { width: 48%; padding: 12px; border-radius: 10px; text-align: center; border: 1px solid #E8EDF2; background: #FFFFFF;}
+        .vs-item.highlight { background: #FFF4F4; border-color: #C62828; color: #C62828; }
     </style>
 </head>
 <body>
@@ -75,42 +72,55 @@
             <label style="display: block; font-weight: bold; margin-bottom: 8px;">目前年齡？</label>
             <input type="number" id="user_age" style="width: 100%; padding: 14px; border: 1.5px solid #D1D9E0; border-radius: 12px;" value="25" min="18">
         </div>
-        <button class="cta-btn" style="margin-top: 20px;" onclick="nextPage(2)">下一步</button>
+        <button class="cta-btn" onclick="nextPage(2)">下一步</button>
     </div>
 
     <div id="page2" class="step-page">
-        <h2>理財基因分析</h2>
-        <div class="subtitle">評估資產配置的抗壓性與成長潛力</div>
+        <h2>專業財務基因測驗</h2>
+        <div class="subtitle">5 個維度，精準找出你的專屬獲利引擎</div>
         
-        <div id="quiz-form">
-            <div class="question-block" data-q="1">
-                <div class="question-title">1. 您的投資經驗大約有多久？</div>
-                <button class="option-btn" onclick="selectOption(this, 1, 1)">A. 幾乎無經驗，剛開始接觸</button>
-                <button class="option-btn" onclick="selectOption(this, 1, 2)">B. 1 到 3 年</button>
-                <button class="option-btn" onclick="selectOption(this, 1, 3)">C. 3 年以上，經驗豐富</button>
-            </div>
-
-            <div class="question-block" data-q="2">
-                <div class="question-title">2. 若投資組合突然下跌 20%，您的反應？</div>
-                <button class="option-btn" onclick="selectOption(this, 2, 1)">A. 非常擔心，考慮認賠殺出</button>
-                <button class="option-btn" onclick="selectOption(this, 2, 2)">B. 有點緊張，但會持續觀望</button>
-                <button class="option-btn" onclick="selectOption(this, 2, 3)">C. 覺得是好機會，準備逢低加碼</button>
-            </div>
-
-            <div class="question-block" data-q="3">
-                <div class="question-title">3. 您這筆資金的主要投資目標是？</div>
-                <button class="option-btn" onclick="selectOption(this, 3, 1)">A. 保本為主，只求打敗通膨</button>
-                <button class="option-btn" onclick="selectOption(this, 3, 2)">B. 穩健成長，追求長期累積</button>
-                <button class="option-btn" onclick="selectOption(this, 3, 3)">C. 積極獲利，追求高額報酬</button>
-            </div>
-
-            <button class="cta-btn" id="kyc-submit-btn" onclick="calculateKYC()">看分析結果</button>
+        <div id="q1-block">
+            <div class="quiz-q-title">Q1: 您預計這筆資金可以持續留在市場中多久？</div>
+            <button class="quiz-btn q1" onclick="selectQuiz(1, 1, this)">A. 3 年以內 (隨時可能用到)</button>
+            <button class="quiz-btn q1" onclick="selectQuiz(1, 2, this)">B. 3 到 10 年 (中期目標)</button>
+            <button class="quiz-btn q1" onclick="selectQuiz(1, 3, this)">C. 10 年以上 (長線退休或教育金)</button>
         </div>
 
-        <div id="kyc-result-section">
-            <div id="kyc-type" style="font-size: 1.4em; font-weight: bold; color: #0047AB; margin-bottom: 10px;"></div>
-            <div id="kyc-desc" style="font-size: 0.95em; color: #5E7185; margin-bottom: 15px; line-height: 1.5;"></div>
-            <button class="cta-btn" onclick="nextPage(3)">確認屬性，設定目標</button>
+        <div id="q2-block">
+            <div class="quiz-q-title">Q2: 過去最主要的投資經驗接近哪一種？</div>
+            <button class="quiz-btn q2" onclick="selectQuiz(2, 1, this)">A. 只有定存或傳統儲蓄險</button>
+            <button class="quiz-btn q2" onclick="selectQuiz(2, 2, this)">B. 買過基金、ETF，交給市場管理</button>
+            <button class="quiz-btn q2" onclick="selectQuiz(2, 3, this)">C. 自己操作過個股、期貨等高波動物</button>
+        </div>
+
+        <div id="q3-block">
+            <div class="quiz-q-title">Q3: 若遇到股災，帳面一個月內下跌 20%，您的反應？</div>
+            <button class="quiz-btn q3" onclick="selectQuiz(3, 1, this)">A. 焦慮睡不著，立刻停損保住剩下的錢</button>
+            <button class="quiz-btn q3" onclick="selectQuiz(3, 2, this)">B. 覺得心痛，但會忍住不賣持續觀望</button>
+            <button class="quiz-btn q3" onclick="selectQuiz(3, 3, this)">C. 太棒了！市場大特價，準備逢低加碼</button>
+        </div>
+
+        <div id="q4-block">
+            <div class="quiz-q-title">Q4: 關於這筆資金的期望，偏向哪一種？</div>
+            <button class="quiz-btn q4" onclick="selectQuiz(4, 1, this)">A. 絕對保本，只要稍微抗通膨就好</button>
+            <button class="quiz-btn q4" onclick="selectQuiz(4, 2, this)">B. 追求穩健，期望年化 5%~8% 成長</button>
+            <button class="quiz-btn q4" onclick="selectQuiz(4, 3, this)">C. 追求翻倍！願意為了高報酬忍受劇烈波動</button>
+        </div>
+
+        <div id="q5-block">
+            <div class="quiz-q-title">Q5: 這筆投入資金，佔您每月可支配所得比例？</div>
+            <button class="quiz-btn q5" onclick="selectQuiz(5, 1, this)">A. 超過 50% (老實說有點緊繃)</button>
+            <button class="quiz-btn q5" onclick="selectQuiz(5, 2, this)">B. 20% ~ 50% (合理的資產配置)</button>
+            <button class="quiz-btn q5" onclick="selectQuiz(5, 3, this)">C. 不到 20% (完全閒置的資金)</button>
+        </div>
+
+        <button class="cta-btn" id="btn-calc-kyc" style="margin-top: 25px; display: none;" onclick="calculateKYC()">分析我的理財基因</button>
+
+        <div id="kyc-result-box">
+            <div style="font-size: 0.9em; color: #5E7185; font-weight: bold; margin-bottom: 5px;">診斷結果出爐</div>
+            <div id="kyc-type-name" style="font-size: 1.4em; font-weight: 900; color: #0047AB; margin-bottom: 10px;"></div>
+            <div id="kyc-type-desc" style="font-size: 0.9em; color: #1C2B33; line-height: 1.5; text-align: left;"></div>
+            <button class="cta-btn" style="margin-top: 20px; font-size: 1em;" onclick="nextPage(3)">帶入我的屬性，設定目標</button>
         </div>
     </div>
 
@@ -131,138 +141,191 @@
             <div class="label-row"><span>目標年齡</span><span id="v_target_age" class="val">45</span></div>
             <input type="range" id="target_age" min="19" max="80" value="45" oninput="updateAll()">
         </div>
-
         <div class="slider-box">
             <div class="label-row"><span>每月儲蓄</span><span id="v_monthly_save" class="val">10000</span></div>
             <input type="range" id="monthly_save" min="1000" max="100000" step="1000" value="10000" oninput="updateAll()">
         </div>
-
         <div class="slider-box">
             <div class="label-row"><span>預期年化報酬率 (%)</span><span id="v_roi" class="val">6</span></div>
-            <input type="range" id="roi" min="1" max="35" step="1" value="6" oninput="updateAll()">
+            <input type="range" id="roi" min="1" max="30" step="1" value="6" oninput="updateAll()">
         </div>
 
         <div id="result-box">
             <div style="font-size: 0.9em; font-weight:bold; color: #1C2B33;">目標年齡預估總資產</div>
             <div id="final-amount" class="result-val">0 元</div>
-            
             <div class="principal-val">累積投入本金：<span id="total_p">0</span> 元</div>
-            
             <div class="chart-container"><canvas id="wealthChart"></canvas></div>
-            
             <div id="analysis-text" style="font-size:0.85em; color:#1C2B33; text-align:left; line-height:1.6; padding: 12px; background: white; border-radius: 8px; margin-top: 15px; border-left: 4px solid #D84315;"></div>
         </div>
 
-        <button class="cta-btn" onclick="nextPage(5)" style="margin-top: 20px;">投資標的分析</button>
+        <button class="cta-btn" onclick="nextPage(5)">查看系統為您推薦的專屬配置</button>
     </div>
 
     <div id="page5" class="step-page">
-        <h2>安聯台灣科技</h2>
-        <div class="subtitle">十年報酬率數據</div>
+        <h2 id="res-title">推薦配置方案</h2>
+        <div class="subtitle">根據基因測驗為您量身篩選</div>
+        <div id="res-fund-box" style="background: #F8FAFF; border: 1.5px solid #0047AB; border-radius: 15px; padding: 20px; text-align: center; margin-bottom: 20px;">
+            <div id="res-risk-tag" style="font-size: 0.8em; color: #0047AB; font-weight: bold; background: #E6EEFF; display: inline-block; padding: 2px 10px; border-radius: 20px; margin-bottom: 10px;">RR3 保守型</div>
+            <div id="res-fund-name" style="font-size: 1.4em; font-weight: 900; color: #002D72; margin-bottom: 10px;">聯博科技醫療</div>
+            <div id="res-fund-desc" style="font-size: 0.85em; color: #5E7185; line-height: 1.6; text-align: left; margin-bottom: 15px;"></div>
+            
+            <div style="font-size: 0.85em; color: #002D72; font-weight: bold; text-align: center; margin-top: 15px;">十年歷史淨值走勢模擬</div>
+            <div class="chart-container" style="height: 160px; padding: 5px; border: none; background: #FFFFFF; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,45,114,0.05); margin-top: 5px;">
+                <canvas id="fundSpecificChart"></canvas>
+            </div>
+
+            <div class="component-box">
+                <div style="font-size: 0.85em; color: #002D72; margin-bottom: 10px; font-weight: bold; text-align: center;">前四大核心佈局</div>
+                <div id="fund-components-list"></div>
+            </div>
+
+            <a id="res-link" href="#" target="_blank" class="link-btn">📡 連結標的即時報酬率</a>
+        </div>
         
-        <div style="background: #F8FAFF; border-radius: 12px; padding: 15px; border: 1.5px solid #DDE6F0; margin-bottom: 15px;">
-            <div style="font-size: 0.9em; color: #5E7185; text-align: center; font-weight: bold;">安聯台灣科技 十年歷史走勢模擬</div>
-            <div class="highlight-text" style="color:#C62828;">十年累積報酬 1,955.63%</div>
-            <div class="highlight-sub">年化報酬率高達 35.29%</div>
-            
-            <div class="chart-container" style="height: 220px; padding: 5px; border: none; background: #FFFFFF; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 45, 114, 0.05); margin-top: 10px;">
-                <canvas id="fundHistoryChart"></canvas>
-            </div>
-            
-            <div style="font-size: 0.8em; color: #78909C; text-align: left; margin-top: 10px; line-height: 1.5;">
-                💡 <b>看出端倪了嗎？</b> 圖中的回檔包含了中美貿易戰、疫情與升息縮表。只要堅持不退場，每一次的低點都是未來爆發的起點。
-            </div>
-            
-            <a href="https://mlivul.moneydj.com/main.html?sUrl=%2FW%2FWR%2FWR03.DJHTM%3FA%3DACDD04-DIA00060%26B%3DEBTWIT%26C%3D0%26D%3D0%26E%3D0%26F%3D0%26G%3D0%26H%3D10%26I%3D0%26J%3D0%26COMPARE%3D1%26SFOCUSYEAR%3D1" target="_blank" class="link-btn">
-                📡 點此連線即時資料庫驗證
-            </a>
-        </div>
+        <button class="cta-btn secondary-btn" onclick="nextPage(4)">🔙 返回套用此標的報酬率，重新試算</button>
 
-        <div class="component-box">
-            <div style="font-size: 0.9em; color: #002D72; margin-bottom: 10px; font-weight: bold; text-align: center;">核心佈局：一籃子台灣科技巨頭</div>
-            <div class="comp-item"><span class="comp-name">護國神山：台積電 (TSMC)</span><span class="comp-tag">半導體龍頭</span></div>
-            <div class="comp-item"><span class="comp-name">IC設計旗艦：聯發科</span><span class="comp-tag">5G與邊緣運算</span></div>
-            <div class="comp-item"><span class="comp-name">AI 基礎設施：廣達 / 緯穎</span><span class="comp-tag">全球伺服器</span></div>
-            <div class="comp-item"><span class="comp-name">高階製程關鍵：世芯-KY</span><span class="comp-tag">AI 特殊晶片</span></div>
-        </div>
+        <button id="btn-show-vs" class="cta-btn" style="background: #C62828; margin-top: 25px;" onclick="showVsSection()">想了解「選擇標的的重要性」嗎？點此揭曉 ⚡</button>
 
-        <button class="cta-btn" style="margin-top: 25px;" onclick="nextPage(4)">返回套用真實報酬率試算</button>
-        <button class="cta-btn secondary-btn" onclick="location.reload()">重新設定全新目標</button>
+        <div id="vs-section" style="display: none; margin-top: 30px; animation: fadeIn 0.6s;">
+            <hr style="border: none; border-top: 1px dashed #D1D9E0; margin-bottom: 20px;">
+            <h2 style="color: #C62828;">選擇標的的重要性</h2>
+            <div class="subtitle">同樣每月存 $5,000，結果相差 200 萬</div>
+            
+            <div style="background: #FFF4F4; border-radius: 12px; padding: 15px; border: 1.5px solid #FFCDD2;">
+                <div class="chart-container" style="height: 220px; padding: 5px; border: none; background: transparent; margin: 0;"><canvas id="vsChart"></canvas></div>
+                <div class="vs-card">
+                    <div class="vs-item">
+                        <div style="font-size: 0.8em; color: #5E7185;">0050 大盤</div>
+                        <div style="font-size: 1.2em; font-weight: 900; color: #1C2B33;">約 120 萬</div>
+                    </div>
+                    <div class="vs-item highlight">
+                        <div style="font-size: 0.8em;">安聯台灣科技</div>
+                        <div style="font-size: 1.2em; font-weight: 900;">約 320 萬</div>
+                    </div>
+                </div>
+                <div style="font-size: 0.85em; margin-top: 15px; color: #C62828; line-height: 1.5; font-weight: bold; text-align: center;">
+                    💡 選擇比努力更重要，我們今天就啟動專屬你的獲利引擎！
+                </div>
+            </div>
+            <button class="cta-btn" style="margin-top: 20px; background: #1C2B33;" onclick="location.reload()">重新啟動計畫</button>
+        </div>
     </div>
 </div>
 
 <script>
     let currentStep = 1; let uAge = 18; let gMoney = 10000000; 
-    let lineChartObj = null; let fundChartObj = null;
+    let lineChartObj = null; let vsChartObj = null; let specificChartObj = null;
+    
+    let kycScores = {1:0, 2:0, 3:0, 4:0, 5:0}; 
+    let userRisk = 'moderate'; 
 
-    // KYC 相關變數
-    let kycScores = { 1: 0, 2: 0, 3: 0 };
-
-    function selectOption(btn, questionNum, score) {
-        let parent = btn.parentElement;
-        let buttons = parent.getElementsByClassName('option-btn');
-        for(let i=0; i<buttons.length; i++){
-            buttons[i].classList.remove('selected');
+    // 三大標的專屬資料庫 (線圖數據與持股成分)
+    const fundDataMap = {
+        'conservative': {
+            chartColor: '#2C7A7B',
+            labels: ['2014', '2016', '2018', '2020', '2022', '2024'],
+            data: [100, 130, 150, 190, 220, 250],
+            comps: [
+                { name: '聯合健康 (UNH)', tag: '醫療服務巨頭' },
+                { name: '嬌生 (JNJ)', tag: '生技與製藥' },
+                { name: '微軟 (MSFT)', tag: '醫療 AI 轉型' },
+                { name: '輝瑞 (PFE)', tag: '疫苗與製藥' }
+            ]
+        },
+        'moderate': {
+            chartColor: '#0047AB',
+            labels: ['2014', '2016', '2018', '2020', '2022', '2024'],
+            data: [100, 150, 210, 280, 330, 420],
+            comps: [
+                { name: '微軟 (MSFT)', tag: '雲端與AI霸主' },
+                { name: '蘋果 (AAPL)', tag: '全球消費電子' },
+                { name: '輝達 (NVDA)', tag: '高階運算晶片' },
+                { name: '亞馬遜 (AMZN)', tag: '電商與AWS雲端' }
+            ]
+        },
+        'aggressive': {
+            chartColor: '#C62828',
+            labels: ['2014', '2016', '2018', '2020', '2022', '2024'],
+            data: [100, 180, 250, 450, 600, 1320],
+            comps: [
+                { name: '台積電 (TSMC)', tag: '全球晶圓代工龍頭' },
+                { name: '聯發科 (MediaTek)', tag: '5G與邊緣運算' },
+                { name: '廣達 (Quanta)', tag: 'AI 伺服器代工' },
+                { name: '世芯-KY (Alchip)', tag: '特殊應用 AI 晶片' }
+            ]
         }
+    };
+
+    function selectQuiz(qNum, score, btn) {
+        let buttons = document.getElementsByClassName(`q${qNum}`);
+        for(let i=0; i<buttons.length; i++) { buttons[i].classList.remove('selected'); }
         btn.classList.add('selected');
-        kycScores[questionNum] = score;
+        kycScores[qNum] = score;
+
+        if(kycScores[1] > 0 && kycScores[2] > 0 && kycScores[3] > 0 && kycScores[4] > 0 && kycScores[5] > 0) {
+            document.getElementById('btn-calc-kyc').style.display = 'block';
+            setTimeout(() => { document.getElementById('btn-calc-kyc').scrollIntoView({ behavior: 'smooth', block: 'end' }); }, 100);
+        }
     }
 
     function calculateKYC() {
-        let totalScore = 0;
-        for (let i = 1; i <= 3; i++) {
-            if (kycScores[i] === 0) {
-                alert("主人，有題目還沒點到喔！請幫客戶確認一下。");
-                return;
-            }
-            totalScore += kycScores[i];
-        }
-
-        let typeText = ""; let descText = ""; let defaultRoi = 6;
-
-        if (totalScore <= 4) {
-            typeText = "🛡️ 保守型"; descText = "偏好穩定，適合低風險的防禦型部位，我們等下的報酬率先以 3% 穩健估算。"; defaultRoi = 3;
-        } else if (totalScore <= 7) {
-            typeText = "⚖️ 穩健型"; descText = "能承受一定波動，適合股債平衡配置。我們等下的報酬率先以 8% 進行估算。"; defaultRoi = 8;
+        let totalScore = kycScores[1] + kycScores[2] + kycScores[3] + kycScores[4] + kycScores[5];
+        let kName = ""; let kDesc = "";
+        
+        if (totalScore <= 8) {
+            userRisk = 'conservative';
+            kName = "🛡️ 保守派 (RR3)";
+            kDesc = "你非常重視資產的安全性，比起一夜致富，你更在乎晚上能不能睡得著覺。防禦力是你最大的武器。";
+        } else if (totalScore <= 12) {
+            userRisk = 'moderate';
+            kName = "⚖️ 穩健派 (RR4)";
+            kDesc = "你很理性，知道風險與報酬是雙面刃。你願意承擔合理的波動，來換取打敗通膨與定存的長期增長。";
         } else {
-            typeText = "🚀 積極型"; descText = "追求高成長！非常適合安聯科技這種具備爆發力的標的。我們等下用 15% 來看看威力！"; defaultRoi = 15;
+            userRisk = 'aggressive';
+            kName = "🔥 積極派 (RR5)";
+            kDesc = "你具備極強的財務心理素質！你深知短期的劇烈震盪都是常態，唯有勇敢抱緊強勢資產，才能嚐到財富翻倍的效果。";
         }
 
-        document.getElementById('kyc-type').innerText = typeText;
-        document.getElementById('kyc-desc').innerText = descText;
+        document.getElementById('kyc-type-name').innerText = kName;
+        document.getElementById('kyc-type-desc').innerText = kDesc;
         
-        // 神不知鬼不覺幫業務設定好後面的報酬率
-        document.getElementById('roi').value = defaultRoi;
+        document.getElementById('btn-calc-kyc').style.display = 'none';
+        document.getElementById('kyc-result-box').style.display = 'block';
         
-        document.getElementById('kyc-submit-btn').style.display = 'none';
-        document.getElementById('kyc-result-section').style.display = 'block';
+        setTimeout(() => { document.getElementById('kyc-result-box').scrollIntoView({ behavior: 'smooth', block: 'end' }); }, 100);
     }
 
     function nextPage(step) {
+        if(step === 5) {
+            document.getElementById('btn-show-vs').style.display = 'block';
+            document.getElementById('vs-section').style.display = 'none';
+            showFinalResult();
+        }
+
         document.getElementById(`page${currentStep}`).style.display = 'none';
         document.getElementById(`page${step}`).style.display = 'block';
         document.getElementById(`page${step}`).classList.add('active');
         currentStep = step;
-        
-        if (step !== 5) {
-            document.getElementById('progress').style.width = (step * 20) + "%";
-        }
+        document.getElementById('progress').style.width = (step * 20) + "%";
         
         if (step === 2) {
             uAge = parseInt(document.getElementById('user_age').value) || 18;
             document.getElementById('target_age').min = uAge + 1;
-        }
-
-        if (step === 5) {
-            setTimeout(renderFundHistoryChart, 150);
         }
     }
 
     function goCalc(name, money) {
         gMoney = money;
         document.getElementById('goal-tag').innerText = `目標：${name}`;
+        
+        let defaultRoi = 8; 
+        if(userRisk === 'conservative') defaultRoi = 6;
+        if(userRisk === 'moderate') defaultRoi = 8;
+        if(userRisk === 'aggressive') defaultRoi = 12;
+        document.getElementById('roi').value = defaultRoi;
+
         nextPage(4);
-        setTimeout(updateAll, 300);
+        setTimeout(updateAll, 100);
     }
 
     function updateAll() {
@@ -293,9 +356,8 @@
         document.getElementById('total_p').innerText = totalPrincipal.toLocaleString();
 
         const compoundEarned = Math.max(0, finalValue - totalPrincipal);
-        
         document.getElementById('analysis-text').innerHTML = 
-            `<span style="color:#D84315;"><b>🔥 複利引擎發威：</b></span> 透過時間與持續投入，您額外滾出了 <b>${compoundEarned.toLocaleString()}</b> 元的驚人財富！這就是複利的威力。`;
+            `<span style="color:#D84315;"><b>🔥 複利引擎發威：</b></span> 透過時間與持續投入，您額外滾出了 <b>${compoundEarned.toLocaleString()}</b> 元的驚人財富！`;
 
         renderLineChart(labels, fvData, bankData, gMoney);
     }
@@ -310,63 +372,101 @@
                 datasets: [
                     { label: '財務目標線', data: Array(labels.length).fill(goal), borderColor: '#C62828', borderDash: [5, 5], borderWidth: 1.5, pointRadius: 0, fill: false },
                     { label: '複利成長曲線', data: fv, borderColor: '#0047AB', backgroundColor: 'rgba(0, 71, 171, 0.15)', fill: true, tension: 0.4, pointRadius: 0, borderWidth: 3 },
-                    { label: '一般定存參照', data: bank, borderColor: '#A5B4C0', borderDash: [3, 3], fill: false, pointRadius: 0 }
+                    { label: '一般定存', data: bank, borderColor: '#A5B4C0', borderDash: [3, 3], fill: false, pointRadius: 0 }
                 ]
             },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { size: 10 } } } }, scales: { y: { beginAtZero: true, ticks: { callback: v => v >= 10000 ? (v/10000)+'萬' : v } } } }
+        });
+    }
+
+    function showFinalResult() {
+        const tag = document.getElementById('res-risk-tag');
+        const name = document.getElementById('res-fund-name');
+        const desc = document.getElementById('res-fund-desc');
+        const link = document.getElementById('res-link');
+        const compList = document.getElementById('fund-components-list');
+
+        const fundData = fundDataMap[userRisk];
+
+        if (userRisk === 'conservative') {
+            tag.innerText = "RR3 保守推薦"; tag.style.background = "#E6FFFA"; tag.style.color = "#2C7A7B";
+            name.innerText = "聯博科技醫療";
+            desc.innerText = "💡 醫療產業具備高度抗震性，結合科技研發，讓您的資產在穩健中保有增長動能。測驗顯示您重視資金防禦，這是最適合您的專屬盾牌。";
+            link.href = "https://mlivul.moneydj.com/main.html?sUrl=%2FW%2FWB%2FWB03.DJHTM%3FA%3DALZ02-AB000020%26B%3DAJ010723%26C%3D0%26D%3D0%26E%3D0%26F%3D0%26G%3D0%26H%3D10%26I%3D0%26J%3D0%26COMPARE%3D1%26SFOCUSYEAR%3D1";
+        } else if (userRisk === 'moderate') {
+            tag.innerText = "RR4 穩健推薦"; tag.style.background = "#E6EEFF"; tag.style.color = "#0047AB";
+            name.innerText = "富達美國成長";
+            desc.innerText = "💡 透過全球經濟火車頭的美股來帶動資產，是平衡風險與報酬的最佳解。";
+            link.href = "https://mlivul.moneydj.com/main.html?sUrl=%2FW%2FWB%2FWB03.DJHTM%3FA%3DFTZ06-FD000010%26B%3DAJ012673%26C%3D0%26D%3D0%26E%3D0%26F%3D0%26G%3D0%26H%3D10%26I%3D0%26J%3D0%26COMPARE%3D1%26SFOCUSYEAR%3D1";
+        } else {
+            tag.innerText = "RR5 積極推薦"; tag.style.background = "#FFF4F4"; tag.style.color = "#C62828";
+            name.innerText = "安聯台灣科技";
+            desc.innerText = "💡鎖定台灣半導體與 AI 產業主動出擊，絕對是您累積千萬財富的最強引擎。";
+            link.href = "https://mlivul.moneydj.com/main.html?sUrl=%2FW%2FWR%2FWR03.DJHTM%3FA%3DACDD04-DIA00060%26B%3DEBTWIT%26C%3D0%26D%3D0%26E%3D0%26F%3D0%26G%3D0%26H%3D10%26I%3D0%26J%3D0%26COMPARE%3D1%26SFOCUSYEAR%3D1";
+        }
+
+        compList.innerHTML = '';
+        fundData.comps.forEach(comp => {
+            compList.innerHTML += `<div class="comp-item"><span class="comp-name">${comp.name}</span><span class="comp-tag">${comp.tag}</span></div>`;
+        });
+
+        const ctxSpecific = document.getElementById('fundSpecificChart').getContext('2d');
+        if (specificChartObj) specificChartObj.destroy();
+        specificChartObj = new Chart(ctxSpecific, {
+            type: 'line',
+            data: {
+                labels: fundData.labels,
+                datasets: [{
+                    label: '淨值走勢', data: fundData.data, 
+                    borderColor: fundData.chartColor, borderWidth: 2.5, fill: true, 
+                    backgroundColor: `${fundData.chartColor}22`, 
+                    tension: 0.3, pointRadius: 2
+                }]
+            },
+            // 在屬性推薦標的線圖中顯示 X 軸年份
             options: { 
                 responsive: true, maintainAspectRatio: false, 
-                plugins: { legend: { position: 'bottom', labels: { font: { size: 10 } } } },
-                scales: { y: { beginAtZero: true, ticks: { callback: v => v >= 10000 ? (v/10000)+'萬' : v } } }
+                plugins: { legend: { display: false } }, 
+                scales: { 
+                    x: { display: true, grid: { display: false }, ticks: { color: '#78909C', font: { size: 10 } } }, 
+                    y: { display: false } 
+                } 
             }
         });
     }
 
-    function renderFundHistoryChart() {
-        const ctx = document.getElementById('fundHistoryChart').getContext('2d');
-        if (fundChartObj) fundChartObj.destroy();
+    function showVsSection() {
+        document.getElementById('btn-show-vs').style.display = 'none';
+        document.getElementById('vs-section').style.display = 'block';
         
-        const timeLabels = ['2016', '2017', '2018', '2019', '2020', '2021', '2022', '2023', '2024', '2025', '2026'];
-        const growthData = [100, 140, 115, 180, 250, 420, 280, 520, 850, 1150, 1320]; 
+        const ctx = document.getElementById('vsChart').getContext('2d');
+        if (vsChartObj) vsChartObj.destroy();
+        const labels = ['2014', '2016', '2018', '2020', '2022', '2024'];
+        const data0050 = [0, 15, 35, 65, 95, 120]; 
+        const dataAllianz = [0, 25, 60, 130, 210, 320];
 
-        fundChartObj = new Chart(ctx, {
+        vsChartObj = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: timeLabels,
-                datasets: [{
-                    label: '安聯台灣科技基金淨值走勢',
-                    data: growthData,
-                    borderColor: '#C62828',
-                    backgroundColor: (context) => {
-                        const bgCtx = context.chart.ctx;
-                        const gradient = bgCtx.createLinearGradient(0, 0, 0, 200);
-                        gradient.addColorStop(0, 'rgba(198, 40, 40, 0.25)');
-                        gradient.addColorStop(1, 'rgba(198, 40, 40, 0.0)');
-                        return gradient;
-                    },
-                    fill: true,
-                    tension: 0.35,
-                    borderWidth: 2.5,
-                    pointBackgroundColor: '#FFFFFF',
-                    pointBorderColor: '#C62828',
-                    pointRadius: 3,
-                    pointHoverRadius: 6
-                }]
+                labels: labels,
+                datasets: [
+                    { label: '0050大盤', data: data0050, borderColor: '#A5B4C0', borderDash: [5, 5], fill: false, tension: 0.3, pointRadius: 0 },
+                    { label: '安聯台科', data: dataAllianz, borderColor: '#C62828', borderWidth: 3, fill: true, backgroundColor: 'rgba(198, 40, 40, 0.1)', tension: 0.3, pointRadius: 2 }
+                ]
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { 
-                    legend: { display: false }, 
-                    tooltip: { 
-                        callbacks: { label: (ctx) => ` 淨值增長指數: ${ctx.raw}` } 
-                    } 
-                },
-                scales: {
-                    y: { display: false, beginAtZero: false }, 
-                    x: { grid: { display: false }, ticks: { color: '#78909C', font: { size: 10 }, maxRotation: 45, minRotation: 45 } }
-                }
+            // 在對決圖表顯示 X 軸年份，隱藏 Y 軸與垂直網格線
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                plugins: { legend: { display: false } }, 
+                scales: { 
+                    x: { display: true, grid: { display: false }, ticks: { color: '#78909C', font: { size: 10 } } }, 
+                    y: { display: false } 
+                } 
             }
         });
+
+        setTimeout(() => { document.getElementById('vs-section').scrollIntoView({ behavior: 'smooth', block: 'end' }); }, 100);
     }
 </script>
 </body>
